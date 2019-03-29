@@ -140,26 +140,28 @@ if __name__ == '__main__':
 
     write_data(be.db)
 
-    # make iterator to make animation easier
-    d = Data(be.db)
-    initxy, initenv = copy(next(d))
+    ANIMATE = False
+    if ANIMATE:
+        # make iterator to make animation easier
+        d = Data(be.db)
+        initxy, initenv = copy(next(d))
 
-    colors = [color_map[t] for t in initxy[0]]
-    sizes = [size_map[t] for t in initxy[0]]
+        colors = [color_map[t] for t in initxy[0]]
+        sizes = [size_map[t] for t in initxy[0]]
 
-    fig = plt.figure()
-    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
-    ax = fig.add_subplot(111, aspect='equal', autoscale_on=False,
-                         xlim=(-L-0.2, L+0.2), ylim=(-L-0.2, L+0.2))
+        fig = plt.figure()
+        fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
+        ax = fig.add_subplot(111, aspect='equal', autoscale_on=False,
+                             xlim=(-L-0.2, L+0.2), ylim=(-L-0.2, L+0.2))
 
-    scat = ax.scatter(initxy[1][:,0]
-                    , initxy[1][:,1]
-                    , facecolors = colors
-                    , s = sizes
-                    )
+        scat = ax.scatter(initxy[1][:,0]
+                        , initxy[1][:,1]
+                        , facecolors = colors
+                        , s = sizes
+                        )
 
 
-    print("writing video to",simname+".mp4")
-    mkAnimation()
+        print("writing video to",simname+".mp4")
+        mkAnimation()
 
 
