@@ -133,7 +133,7 @@ if __name__ == '__main__':
                       sticky=allow_attachment, wires=wires,
                       regions=regions, policy=policy)
     simulation = Simulation(be)
-    simname = env.name+"_N"+str(N)+"_T"+str(T)+"_R"+str(starting_poly)+"_A"+str(action)
+    simname = env.name+"_N"+str(N)+"_T"+str(T)+"_R"+str(start)+"_A"+str(action)
 
     # create N particles at random locations in the polygon
     starting_poly = regions[start]
