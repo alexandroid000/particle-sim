@@ -36,7 +36,7 @@ class Data:
         return self.clean_system(dat), polys
 
 
-def write_data(database):
+def write_data(database, simname):
         
     # write position data to file
     with open(simname+'.xyz','w') as th:
@@ -124,7 +124,6 @@ if __name__ == '__main__':
         line = p.readline().strip().strip('()').split(", ")
         policy = [int(p) for p in line]
 
-    print(policy)
 
     # initialize simulation
     system = System()
@@ -137,8 +136,8 @@ if __name__ == '__main__':
 
     # create N particles at random locations in the polygon
     starting_poly = regions[start]
-    start_pts = uniform_sample_from_poly(starting_poly, N)
-    # start_pts = uniform_sample_along_circle(env, N, 2.0)
+    # start_pts = uniform_sample_from_poly(starting_poly, N)
+    start_pts = uniform_sample_along_circle(env, N, 2.0)
     for i in range(N):
         vel = normalize(np.array([random()-0.5, random()-0.5]))
         system.particle.append(Particle(position=start_pts[i], velocity=list(vel), radius = None, species= 'A-free'))
@@ -147,9 +146,9 @@ if __name__ == '__main__':
     simulation.run(T-1)
     print("ran sim for ",T,"steps")
 
-    write_data(be.db)
+    write_data(be.db, simname)
 
-    ANIMATE = False
+    ANIMATE = True
     if ANIMATE:
         # make iterator to make animation easier
         d = Data(be.db)

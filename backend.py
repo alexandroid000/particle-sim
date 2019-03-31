@@ -170,7 +170,6 @@ class ParticleSim(ParticlePhysics):
             # log regions; only works at beginning of loop for some reason
             self.log_data(i, region_counts)
             joint_state = encodeJointState(states)
-            print(states,"encoded as",joint_state)
             new_orientations = decode_policy(self.policy[joint_state])
             self.wires = [Wire(v, o) for v, o in zip(wire_verts, new_orientations)]
 
