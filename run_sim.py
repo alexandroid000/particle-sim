@@ -14,11 +14,28 @@ from configuration import *
 from utilities import normalize, Wire
 from random import random
 
+# display parameters
+# ------------------
+
+color_map = { 'A-wall': (0, 0, 1)
+            , 'A-free': (0, 0, 1)
+            , 'B-wall': (0, 1, 0)
+            , 'B-free': (0, 1, 0)
+            }
+size_map =  { 'A-wall': 10
+            , 'A-free': 10
+            , 'B-wall': 50
+            , 'B-free': 50
+            }
+
+# clean data and put in form that makes animate functions more readable
+  
 class Data:
 
     def __init__(self, db, start=0):
         self.xy = db["pos"]
         self.env = db["env"]
+        self.wires = db["wires"]
         self.num = start
 
     def __iter__(self):
@@ -32,8 +49,9 @@ class Data:
     def __next__(self):
         dat = self.xy[self.num]
         polys = [np.array(poly) for poly in self.env[self.num]]
+        wires = self.wires[self.num]
         self.num += 1
-        return self.clean_system(dat), polys
+        return self.clean_system(dat), polys, wires
 
 
 def write_data(database, simname):
@@ -56,18 +74,6 @@ def write_data(database, simname):
 
     print("wrote data to",simname+"_regions.csv")
 
-color_map = { 'A-wall': (0, 0, 1)
-            , 'A-free': (0, 0, 1)
-            , 'B-wall': (0, 1, 0)
-            , 'B-free': (0, 1, 0)
-            }
-size_map =  { 'A-wall': 10
-            , 'A-free': 10
-            , 'B-wall': 50
-            , 'B-free': 50
-            }
-
-
 
 
 def init():
@@ -75,19 +81,21 @@ def init():
     global scat, patches, w_patches
     patches = []
     w_patches = []
+
     for poly in initenv:
         p = Polygon(poly, ec='k', lw=2, fc='none')
         patches.append(ax.add_patch(p))
 
-    for w in wire_verts:
-        c = Circle(w, 0.1, facecolor='r', hatch='x')
+    for w in initwires:
+        pos = w.xy
+        c = Circle(pos, 0.1, facecolor='r')
         w_patches.append(ax.add_patch(c))
     return w_patches+patches+[scat]
 
 def animate(i):
     """perform animation step"""
     global scat, patches, w_patches
-    xy, polys = next(d)
+    xy, polys, ws = next(d)
 
     for j in range(1,len(patches)):
         patches[j].set_xy(polys[j])
@@ -113,21 +121,28 @@ def mkAnimation():
 if __name__ == '__main__':
 
     args = sys.argv[1:]
-    start = int(args[0])
-    action = int(args[1])
+    if len(args) == 0:
+        start = 0
+        action = 0
+    elif len(args) == 1:
+        start = int(args[0])
+        action = 0
+    else:
+        start = int(args[0])
+        action = int(args[1])
     orientations = decode_policy(action)
     wires = [Wire(v, o) for v, o in zip(wire_verts, orientations)]
 
     # load policy from file (for 5-agent MDP solution)
     policy = []
-    with open("policy5.txt", 'r') as p:
+    with open("policy9.txt", 'r') as p:
         line = p.readline().strip().strip('()').split(", ")
         policy = [int(p) for p in line]
 
 
     # initialize simulation
     system = System()
-    data = {"pos":[[]]*T, "env":[[]]*T, "counts":[[]]*(T-1)}
+    data = {"pos":[[]]*T, "env":[[]]*T, "counts":[[]]*(T-1), "wires":[[]]*T}
     be = ParticleSim(system, data, env, br = border_region,
                       sticky=allow_attachment, wires=wires,
                       regions=regions, policy=policy)
@@ -152,7 +167,7 @@ if __name__ == '__main__':
     if ANIMATE:
         # make iterator to make animation easier
         d = Data(be.db)
-        initxy, initenv = copy(next(d))
+        initxy, initenv, initwires = copy(next(d))
 
         colors = [color_map[t] for t in initxy[0]]
         sizes = [size_map[t] for t in initxy[0]]
@@ -167,6 +182,8 @@ if __name__ == '__main__':
                         , facecolors = colors
                         , s = sizes
                         )
+
+
 
 
         print("writing video to",simname+".mp4")
