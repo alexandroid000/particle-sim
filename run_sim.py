@@ -134,10 +134,10 @@ if __name__ == '__main__':
     wires = [Wire(v, o) for v, o in zip(wire_verts, orientations)]
 
     # load policy from file (for 5-agent MDP solution)
-    policy = []
-    with open("policy9.txt", 'r') as p:
-        line = p.readline().strip().strip('()').split(", ")
-        policy = [int(p) for p in line]
+    #policy = []
+    #with open("policy9.txt", 'r') as p:
+    #    line = p.readline().strip().strip('()').split(", ")
+    #    policy = [int(p) for p in line]
 
 
     # initialize simulation
@@ -145,7 +145,7 @@ if __name__ == '__main__':
     data = {"pos":[[]]*T, "env":[[]]*T, "counts":[[]]*(T-1), "wires":[[]]*T}
     be = ParticleSim(system, data, env, br = border_region,
                       sticky=allow_attachment, wires=wires,
-                      regions=regions, policy=policy)
+                      regions=regions)
     simulation = Simulation(be)
     simname = env.name+"_N"+str(N)+"_T"+str(T)+"_R"+str(start)+"_A"+str(action)
 
