@@ -123,6 +123,7 @@ def midpoint(pt1, pt2):
     return (pt1+pt2)/2
 
 # Magnetic flow field generation
+# all the ugly packing/unpacking is to make matplotlib stuff work
 # ------------------------------
 
 class Wire():
@@ -130,22 +131,27 @@ class Wire():
         self.xy = xy
         self.dir = dir
 
-    def force_at(self, xy_measured):
-        normal = xy_measured - self.xy
+    def force_at(self, x, y):
+        xself, yself = self.xy
+        normal = np.array([x-xself, y-yself])
         # current flowing through wire creates mag field that drops off as 1/r
-        field_strength = 1.0/np.linalg.norm(normal)
+        field_strength = np.true_divide(1.0, np.linalg.norm(normal, axis=0))
+        field = []
         if self.dir == "CW":
-            return field_strength*normalize(rotate_vector(normal, 3.*np.pi/2.))
-        if self.dir == "CCW":
-            return field_strength*normalize(rotate_vector(normal, np.pi/2.))
+            field = field_strength*normalize(rotate_vector(normal, 3.*np.pi/2.))
+        elif self.dir == "CCW":
+            field = field_strength*normalize(rotate_vector(normal, np.pi/2.))
         else:
-            return np.array([0., 0.])
+            field = np.array([0.*x, 0.*y])
+        return field[0], field[1]
 
 # magnetic fields follow superposition principle
 def force_from_wires(wires, xy):
+    x, y = xy
     force = np.array([0.0, 0.0])
     for w in wires:
-        force += w.force_at(xy)
+        fx, fy = w.force_at(x, y)
+        force += np.array([fx, fy])
     return force
 
 # running policies

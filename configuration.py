@@ -9,8 +9,8 @@ import numpy as np
 # define simulation parameters here
 
 L = 3.0
-N = 5
-T = 100
+N = 9
+T = 300
 R = 0.02
 border_region = R
 allow_attachment = False

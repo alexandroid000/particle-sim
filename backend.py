@@ -110,7 +110,7 @@ class ParticlePhysics(object):
         # random update to velocity heading
         # Gaussian, mean at current heading, standard deviation 1 radian
         theta = np.arctan2(particle.velocity[1], particle.velocity[0])
-        xi_theta = np.random.normal(loc=theta)
+        xi_theta = np.random.vonmises(mu=theta, kappa=1.)
 
         # update velocity for next step
         beta = properties[particle.species]['beta']
@@ -168,10 +168,13 @@ class ParticleSim(ParticlePhysics):
         for i in range(steps):
 
             # log regions; only works at beginning of loop for some reason
-            self.log_data(i, region_counts)
             joint_state = encodeJointState(states)
-            new_orientations = decode_policy(self.policy[joint_state])
-            self.wires = [Wire(v, o) for v, o in zip(wire_verts, new_orientations)]
+            if self.policy != []:
+                new_orientations = decode_policy(self.policy[joint_state])
+                self.log_data(i, region_counts, new_orientations)
+                self.wires = [Wire(v, o) for v, o in zip(wire_verts, new_orientations)]
+            else:
+                self.log_data(i, region_counts)
 
             region_counts = [0]*len(self.regions)
             for j,p in enumerate(self.system.particle):
@@ -198,11 +201,13 @@ class ParticleSim(ParticlePhysics):
                     self.take_step(p)
 
 
-    def log_data(self, step, r_counts):
+    def log_data(self, step, r_counts, wires = []):
         xys = [(copy(p.species), copy(p.position)) for p in self.system.particle]
         envs = [[v for (i,v) in c] for c in deepcopy(self.env.vertex_list_per_poly)]
         rs = copy(r_counts)
+        wires = deepcopy(wires)
         self.db["pos"][step] = xys
         self.db["env"][step] = envs
         self.db["counts"][step] = rs
+        self.db["wires"][step] = wires
 
