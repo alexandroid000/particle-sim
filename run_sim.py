@@ -144,7 +144,7 @@ if __name__ == '__main__':
     system = System()
     data = {"pos":[[]]*T, "env":[[]]*T, "counts":[[]]*(T-1), "wires":[[]]*T}
     be = ParticleSim(system, data, env, br = border_region,
-                      sticky=allow_attachment, wires=wires,
+                      sticky=allow_attachment, 
                       regions=regions)
     simulation = Simulation(be)
     simname = env.name+"_N"+str(N)+"_T"+str(T)+"_R"+str(start)+"_A"+str(action)
