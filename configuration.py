@@ -8,12 +8,13 @@ import numpy as np
 
 # define simulation parameters here
 
-L = 3.0
-N = 9
-T = 300
-R = 0.02
+
+L = 3.0 #environment characteristic length
+N = 9 # of agent
+T = 300 # #of time steps in simulator, # of stages, unitless 
+R = 0.02 #colliding length scale 
 border_region = R
-allow_attachment = False
+allow_attachment = False # particles don't interact with each other 
 
 #import yaml
 
@@ -27,13 +28,17 @@ allow_attachment = False
 
 
 
-#square = Simple_Polygon("square",np.array([[0.0,0.0], [L, 0.0],[L,L],[0.0,L]]))
+square = Simple_Polygon("square",np.array([[0.0,0.0], [L, 0.0],[L,L],[0.0,L]]))
 #square_hole = Simple_Polygon("sqh",simple_holes[0], simple_holes[1])
 #spikes = Simple_Polygon("spikes",np.array(mk_spiky_circle(8, 0.5*L)))
+#l_poly = [np.array([(0, 0), (60, 0), (60, 23), (26, 23), (26, 46), (0, 46)],
+#dtype=np.float)]
 
-spike_annulus = Simple_Polygon("spk_ring",
-                               np.array(mk_spiky_circle(8, 0.5*L)),
-                              [np.array(mk_obstacle(mk_regpoly(4, 0.4*L)))])
+
+
+#spike_annulus = Simple_Polygon("spk_ring",
+#                               np.array(mk_spiky_circle(8, 0.5*L)),
+#                             [np.array(mk_obstacle(mk_regpoly(4, 0.4*L)))])
 
 oct_verts = np.array(mk_regpoly(8, 0.8*L, offset=np.pi/8.))
 wire_verts = np.array(mk_regpoly(4, 0.4*L, offset=np.pi/4))
@@ -53,7 +58,7 @@ rs_as_obs = [mk_obstacle(r) for r in rs]
 regions = [Simple_Polygon("r"+str(i), np.array(vs)) for i,vs in enumerate(rs)]
 
 octagon = Simple_Polygon("octagon", oct_verts)
-env = octagon
+env = l_poly2
 
 # type A particles:
     # faster
