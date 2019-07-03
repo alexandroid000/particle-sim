@@ -1,8 +1,3 @@
-from atooms.system.particle import Particle
-from atooms.system.cell import Cell
-from atooms.system import System
-from atooms.simulation import Simulation
-
 import csv
 
 import matplotlib.pyplot as plt
@@ -130,27 +125,17 @@ if __name__ == '__main__':
     else:
         start = int(args[0])
         action = int(args[1])
-    orientations = decode_policy(action)
-    wires = [Wire(v, o) for v, o in zip(wire_verts, orientations)]
-
-    # load policy from file (for 5-agent MDP solution)
-    #policy = []
-    #with open("policy9.txt", 'r') as p:
-    #    line = p.readline().strip().strip('()').split(", ")
-    #    policy = [int(p) for p in line]
 
 
     # initialize simulation
     system = System()
     data = {"pos":[[]]*T, "env":[[]]*T, "counts":[[]]*(T-1), "wires":[[]]*T}
-    be = ParticleSim(system, data, env, br = border_region,
-                      sticky=allow_attachment, 
-                      regions=regions)
-    simulation = Simulation(be)
+    simulation = ParticleSim(system, data, env, br = border_region,
+                      sticky=allow_attachment)
     simname = env.name+"_N"+str(N)+"_T"+str(T)+"_R"+str(start)+"_A"+str(action)
 
     # create N particles at random locations in the polygon
-    starting_poly = regions[start]
+    starting_poly = env
     # start_pts = uniform_sample_from_poly(starting_poly, N)
     start_pts = uniform_sample_along_circle(env, N, 2.0)
     for i in range(N):
@@ -161,12 +146,12 @@ if __name__ == '__main__':
     simulation.run(T-1)
     print("ran sim for ",T,"steps")
 
-    write_data(be.db, simname)
+    write_data(simulation.db, simname)
 
     ANIMATE = True
     if ANIMATE:
         # make iterator to make animation easier
-        d = Data(be.db)
+        d = Data(simulation.db)
         initxy, initenv, initwires = copy(next(d))
 
         colors = [color_map[t] for t in initxy[0]]
@@ -175,7 +160,7 @@ if __name__ == '__main__':
         fig = plt.figure()
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         ax = fig.add_subplot(111, aspect='equal', autoscale_on=False,
-                             xlim=(-50, 650), ylim=(-50, 650)) #scale for animation window
+                             xlim=(-2*L, 2*L), ylim=(-2*L, 2*L)) #scale for animation window
         #TODO MAKE into a variable then put into config file  
 
         scat = ax.scatter(initxy[1][:,0]

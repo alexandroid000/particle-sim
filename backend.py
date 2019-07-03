@@ -15,6 +15,19 @@ from configuration import *
 # Simulation Backend
 # ------------------
 
+class Particle():
+
+    def __init__(self, position, velocity, radius = None, species = None):
+        self.position = position
+        self.velocity = velocity
+        self.radius = radius
+        self.species = species
+
+class System():
+
+    def __init__(self):
+        self.particle = []
+
 class ParticlePhysics(object):
 
     def __init__(self, system, env, delta=0.05,

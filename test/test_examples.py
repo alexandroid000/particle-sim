@@ -20,10 +20,10 @@ class TestExamples(unittest.TestCase):
 
         wire1 = Wire(o, "CCW")
         wire2 = Wire(o, "CW")
-        pt1_test_ccw = wire1.force_at(pt1)
-        pt2_test_ccw = wire1.force_at(pt2)
-        pt1_test_cw = wire2.force_at(pt1)
-        pt2_test_cw = wire2.force_at(pt2)
+        pt1_test_ccw = np.array(wire1.force_at(*pt1))
+        pt2_test_ccw = np.array(wire1.force_at(*pt2))
+        pt1_test_cw  = np.array(wire2.force_at(*pt1))
+        pt2_test_cw  = np.array(wire2.force_at(*pt2))
         np.testing.assert_almost_equal(pt1_test_ccw,
                                        rotate_vector(pt1_test_cw, np.pi),
                                        decimal=7, verbose=True)
