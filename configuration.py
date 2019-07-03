@@ -58,7 +58,7 @@ rs_as_obs = [mk_obstacle(r) for r in rs]
 regions = [Simple_Polygon("r"+str(i), np.array(vs)) for i,vs in enumerate(rs)]
 
 octagon = Simple_Polygon("octagon", oct_verts)
-env = l_poly2
+env = square
 
 # type A particles:
     # faster
