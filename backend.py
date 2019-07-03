@@ -23,6 +23,11 @@ class Particle():
         self.radius = radius
         self.species = species
 
+class System():
+
+    def __init__(self):
+        self.particle = []
+
 class ParticlePhysics(object):
 
     def __init__(self, system, env, delta=0.05,

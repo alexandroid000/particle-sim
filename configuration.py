@@ -1,6 +1,5 @@
-from simple_polygon import Simple_Polygon
-from maps import *
 from utilities import *
+from environments import *
 import numpy as np
 
 # System Configuration
@@ -8,57 +7,12 @@ import numpy as np
 
 # define simulation parameters here
 
-
-L = 3.0 #environment characteristic length
-N = 9 # of agent
-T = 300 # #of time steps in simulator, # of stages, unitless 
-R = 0.02 #colliding length scale 
+L = 3.0 # environment characteristic length
+N = 9 # number of particles
+T = 300 # number of time steps/stages in simulator, unitless 
+R = 0.02 # colliding length scale 
 border_region = R
-allow_attachment = False # particles don't interact with each other 
-
-#import yaml
-
-# System Configuration
-# --------------------
-
-# define simulation parameters here
-
-#with open("configuration.yaml", 'r') as f:
-#    data = yaml.load(f)
-
-
-
-square = Simple_Polygon("square",np.array([[0.0,0.0], [L, 0.0],[L,L],[0.0,L]]))
-#square_hole = Simple_Polygon("sqh",simple_holes[0], simple_holes[1])
-#spikes = Simple_Polygon("spikes",np.array(mk_spiky_circle(8, 0.5*L)))
-#l_poly = [np.array([(0, 0), (60, 0), (60, 23), (26, 23), (26, 46), (0, 46)],
-#dtype=np.float)]
-
-
-
-#spike_annulus = Simple_Polygon("spk_ring",
-#                               np.array(mk_spiky_circle(8, 0.5*L)),
-#                             [np.array(mk_obstacle(mk_regpoly(4, 0.4*L)))])
-
-oct_verts = np.array(mk_regpoly(8, 0.8*L, offset=np.pi/8.))
-wire_verts = np.array(mk_regpoly(4, 0.4*L, offset=np.pi/4))
-
-
-r1 = [wire_verts[0], midpoint(oct_verts[0], oct_verts[1]), oct_verts[1], oct_verts[2],
-midpoint(oct_verts[2], oct_verts[3]), wire_verts[1]]
-r2 = [wire_verts[1], midpoint(oct_verts[2], oct_verts[3]), oct_verts[3], oct_verts[4],
-midpoint(oct_verts[4], oct_verts[5]), wire_verts[2]]
-r3 = [wire_verts[2], midpoint(oct_verts[4], oct_verts[5]), oct_verts[5], oct_verts[6],
-midpoint(oct_verts[6], oct_verts[7]), wire_verts[3]]
-r4 = [wire_verts[3], midpoint(oct_verts[6], oct_verts[7]), oct_verts[7], oct_verts[0],
-midpoint(oct_verts[0], oct_verts[1]), wire_verts[0]]
-
-rs = [wire_verts, r1, r2, r3, r4]
-rs_as_obs = [mk_obstacle(r) for r in rs]
-regions = [Simple_Polygon("r"+str(i), np.array(vs)) for i,vs in enumerate(rs)]
-
-octagon = Simple_Polygon("octagon", oct_verts)
-env = square
+allow_attachment = False # particles don't interact with each other
 
 # type A particles:
     # faster
@@ -77,3 +31,9 @@ properties = { 'A-free':A_properties
              ,'A-wall':A_properties
              ,'B-wall':B_properties
              }
+
+# Environment Configuration
+# --------------------
+
+env = square(L)
+
