@@ -6,10 +6,10 @@ from random import random
 # using bounce-viz as a submodule for geometric utilities
 import sys
 sys.path.insert(0, "./bounce-viz/src/")
-from helper.shoot_ray_helper import IsInPoly, ClosestPtAlongRay
-from helper.geometry_helper import AngleBetween
-from utilities import *
-from configuration import *
+from helper.shoot_ray_helper import IsInPoly, ClosestPtAlongRay # pylint: disable=unused-import
+from helper.geometry_helper import AngleBetween # pylint: disable=unused-import
+from utilities import * # pylint: disable=unused-import
+from configuration import * # pylint: disable=unused-import
 
 
 # Simulation Backend
@@ -17,17 +17,18 @@ from configuration import *
 
 class Particle():
 
-    def __init__(self, position, velocity, radius = None, species = None):
+    def __init__(self, position, velocity, radius = None, species = None): # constructoe of  a class
         self.position = position
         self.velocity = velocity
         self.radius = radius
         self.species = species
-
+### Q. why position and velocity are not set equal to "None"? Design choice? 
+## self is a convention to write 
 class System():
 
     def __init__(self):
         self.particle = []
-
+### Q. why do we need list for particle? 
 class ParticlePhysics(object):
 
     def __init__(self, system, env, delta=0.05,
