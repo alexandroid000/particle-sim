@@ -160,9 +160,9 @@ if __name__ == '__main__':
         fig = plt.figure()
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         ax = fig.add_subplot(111, aspect='equal', autoscale_on=False,
-                             xlim=(-2*L, 2*L), ylim=(-2*L, 2*L)) #scale for animation window
+                             xlim = (xMin,xMax) , ylim = (yMin, yMax)) #scale for animation window
         #TODO MAKE into a variable then put into config file  
-
+        
         scat = ax.scatter(initxy[1][:,0]
                         , initxy[1][:,1]
                         , facecolors = colors

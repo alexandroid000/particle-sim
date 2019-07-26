@@ -12,7 +12,11 @@ N = 9 # number of particles
 T = 300 # number of time steps/stages in simulator, unitless 
 R = 0.02 # colliding length scale 
 border_region = R
-allow_attachment = False # particles don't interact with each other
+allow_attachment = True # particles don't interact with each other
+xMin = -2*L
+xMax = 2*L
+yMin = -2*L
+yMax = 2*L
 
 # type A particles:
     # faster
