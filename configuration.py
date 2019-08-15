@@ -7,22 +7,24 @@ import numpy as np
 
 # define simulation parameters here
 
-L = 3.0 # environment characteristic length
+L = 150.0 # environment characteristic length
 N = 9 # number of particles
 T = 300 # number of time steps/stages in simulator, unitless 
-R = 0.02 # colliding length scale 
+R = 1 # colliding length scale ## Any units? 1/50 of animation scale?
 border_region = R
-allow_attachment = True # particles don't interact with each other
+allow_attachment = False # particles don't interact with each other #
 xMin = -2*L
 xMax = 2*L
 yMin = -2*L
 yMax = 2*L
 
+## play around with numbers below 
+
 # type A particles:
     # faster
     # smaller rotational drift
     # escape from walls more quickly
-A_properties = {'vel':1.0, 'wall_prob': 0.05, 'beta': 0.2}
+A_properties = {'vel':25.0, 'wall_prob': 0.05, 'beta': 0.2, 'mass':1}
 
 # type B particles:
     # slower
@@ -39,5 +41,5 @@ properties = { 'A-free':A_properties
 # Environment Configuration
 # --------------------
 
-env = square(L)
+env = simple_nonconv_p()
 

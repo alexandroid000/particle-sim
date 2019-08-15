@@ -19,7 +19,12 @@ square_hole = Simple_Polygon("sqh",simple_holes[0], simple_holes[1])
 l_poly = [np.array([(0, 0), (60, 0), (60, 23), (26, 23), (26, 46), (0, 46)],
 dtype=np.float)]
 
+def shelfp():
+    return Simple_Polygon("shelf",shelf[0])
 # octagon divided into five regions
+
+def simple_nonconv_p():
+    return Simple_Polygon("simple_nonconv",simple_nonconv[0])
 
 def octagon_rs(L):
     oct_verts = np.array(mk_regpoly(8, 0.8*L, offset=np.pi/8.))
@@ -39,3 +44,4 @@ def octagon_rs(L):
     rs_as_obs = [mk_obstacle(r) for r in rs]
     regions = [Simple_Polygon("r"+str(i), np.array(vs)) for i,vs in enumerate(rs)]
     return regions
+

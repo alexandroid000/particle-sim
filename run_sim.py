@@ -136,12 +136,13 @@ if __name__ == '__main__':
 
     # create N particles at random locations in the polygon
     starting_poly = env
-    # start_pts = uniform_sample_from_poly(starting_poly, N)
-    start_pts = uniform_sample_along_circle(env, N, 2.0)
+    #start_pts = uniform_sample_from_poly(starting_poly, N)
+    start_pts = uniform_sample_along_circle(env, N, 2.0) #(x,x,circle size)
+    #CREATING PARTICLE WITH RANDOM VEL 
     for i in range(N):
         vel = normalize(np.array([random()-0.5, random()-0.5]))
-        system.particle.append(Particle(position=start_pts[i], velocity=list(vel), radius = None, species= 'A-free'))
-
+        system.particle.append(Particle(position=start_pts[i], velocity=list(vel), radius = None, species= 'A-free', mass = None))
+        ##wpuld add "mass" here
     # run simulation for T steps
     simulation.run(T-1)
     print("ran sim for ",T,"steps")
