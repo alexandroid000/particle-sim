@@ -130,8 +130,7 @@ if __name__ == '__main__':
     # initialize simulation
     system = System()
     data = {"pos":[[]]*T, "env":[[]]*T, "counts":[[]]*(T-1), "wires":[[]]*T}
-    simulation = ParticleSim(system, data, env, br = border_region,
-                      sticky=allow_attachment)
+    simulation = ParticleSim(system, data, env, br = R, sticky=ATTACH)
     simname = env.name+"_N"+str(N)+"_T"+str(T)+"_R"+str(start)+"_A"+str(action)
 
     # create N particles at random locations in the polygon
@@ -148,7 +147,6 @@ if __name__ == '__main__':
 
     write_data(simulation.db, simname)
 
-    ANIMATE = True
     if ANIMATE:
         # make iterator to make animation easier
         d = Data(simulation.db)
@@ -160,8 +158,7 @@ if __name__ == '__main__':
         fig = plt.figure()
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         ax = fig.add_subplot(111, aspect='equal', autoscale_on=False,
-                             xlim = (xMin,xMax) , ylim = (yMin, yMax)) #scale for animation window
-        #TODO MAKE into a variable then put into config file  
+                             xlim=(XMIN,XMAX) , ylim=(YMIN,YMAX)) #scale for animation window
         
         scat = ax.scatter(initxy[1][:,0]
                         , initxy[1][:,1]

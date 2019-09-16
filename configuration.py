@@ -10,13 +10,21 @@ import numpy as np
 L = 3.0 # environment characteristic length
 N = 9 # number of particles
 T = 300 # number of time steps/stages in simulator, unitless 
-R = 0.02 # colliding length scale 
-border_region = R
-allow_attachment = True # particles don't interact with each other
-xMin = -2*L
-xMax = 2*L
-yMin = -2*L
-yMax = 2*L
+R = 0.02 # colliding length scale; effective radius of particle
+ATTACH = True # whether particles stick to each other
+XMIN = -2*L
+XMAX = 2*L
+YMIN = -2*L
+YMAX = 2*L
+ANIMATE = True
+
+# Environment Configuration
+# --------------------
+
+env = square(L)
+
+# Particle Configuration
+# ----------------------
 
 # type A particles:
     # faster
@@ -35,9 +43,4 @@ properties = { 'A-free':A_properties
              ,'A-wall':A_properties
              ,'B-wall':B_properties
              }
-
-# Environment Configuration
-# --------------------
-
-env = square(L)
 
