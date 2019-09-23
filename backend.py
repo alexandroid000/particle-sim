@@ -179,7 +179,7 @@ class ParticleSim(ParticlePhysics):
                         #calling "take_step" immediately after collision 
     #For inelastic collision - make a line that updates mass 
      
-    def particle_collide(self, p):
+    def particle_collide(self, p): 
         if self.sticky:
                     ns = self.neighbors(p) #checks radius for neighbors  
                     #probability of attaching particles add "if" statement 
