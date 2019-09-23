@@ -134,9 +134,8 @@ if __name__ == '__main__':
     simname = env.name+"_N"+str(N)+"_T"+str(T)+"_R"+str(start)+"_A"+str(action)
 
     # create N particles at random locations in the polygon
-    starting_poly = env
-    # start_pts = uniform_sample_from_poly(starting_poly, N)
-    start_pts = uniform_sample_along_circle(env, N, 2.0)
+    start_pts = uniform_sample_from_poly(env, N)
+    #start_pts = uniform_sample_along_circle(env, N, 2.0)
     for i in range(N):
         vel = normalize(np.array([random()-0.5, random()-0.5]))
         system.particle.append(Particle(position=start_pts[i], velocity=list(vel), radius = None, species= 'A-free'))
