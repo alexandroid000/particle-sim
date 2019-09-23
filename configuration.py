@@ -5,22 +5,47 @@ import numpy as np
 # System Configuration
 # --------------------
 
-# define simulation parameters here
+"""
+Parameters
+----------
 
-L = 3.0 # environment characteristic length
-N = 9 # number of particles
-T = 300 # number of time steps/stages in simulator, unitless 
-R = 0.02 # colliding length scale; effective radius of particle
-ATTACH = True # whether particles stick to each other
+L: float
+    a characteristic environment length, used to autogenerate some environments
+N: int
+    the number of particles at the beginning of the simulation
+T: int
+    number of time steps in simulator
+R: float
+    characteristic "collision" length scale: width of bounding box for particles
+ATTACH: bool
+    true if we want particles to stick together when they collide
+ANIMATE: bool
+    true if we want to produce a mp4 of the simulation
+"""
+
+L = 3.0
+N = 9
+T = 300
+R = 0.02
+ATTACH = True
+ANIMATE = True
+
+"""bounds of animation window"""
 XMIN = -2*L
 XMAX = 2*L
 YMIN = -2*L
 YMAX = 2*L
-ANIMATE = True
+
 
 # Environment Configuration
 # --------------------
 
+"""env defines the environment
+
+needs to be an instance of class
+Simple_Polygon from bounce-viz/src/simple_polygon.py
+
+see environments.py and bounce-viz/src/maps.py for more examples"""
 env = square(L)
 
 # Particle Configuration
@@ -28,8 +53,8 @@ env = square(L)
 
 # type A particles:
     # faster
-    # smaller rotational drift
-    # escape from walls more quickly
+    # smaller rotational drift (beta)
+    # escape from walls more quickly (wall_prob, probability of staying stuck on wall)
 A_properties = {'vel':1.0, 'wall_prob': 0.05, 'beta': 0.2}
 
 # type B particles:

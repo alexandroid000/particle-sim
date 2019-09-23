@@ -9,8 +9,8 @@ from configuration import *
 from utilities import normalize, Wire
 from random import random
 
-# display parameters
-# ------------------
+# Animation display parameters
+# ----------------------------
 
 color_map = { 'A-wall': (0, 0, 1)
             , 'A-free': (0, 0, 1)
