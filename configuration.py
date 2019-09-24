@@ -5,41 +5,68 @@ import numpy as np
 # System Configuration
 # --------------------
 
-# define simulation parameters here
+"""
+Parameters
+----------
 
-L = 150.0 # environment characteristic length
-N = 9 # number of particles
-T = 300 # number of time steps/stages in simulator, unitless 
-R = 1 # colliding length scale ## Any units? 1/50 of animation scale?
-border_region = R
-allow_attachment = False # particles don't interact with each other #
-xMin = -2*L
-xMax = 2*L
-yMin = -2*L
-yMax = 2*L
+L: float
+    a characteristic environment length, used to autogenerate some environments
+N: int
+    the number of particles at the beginning of the simulation
+T: int
+    number of time steps in simulator
+R: float
+    characteristic "collision" length scale: width of bounding box for particles
+ATTACH: bool
+    true if we want particles to stick together when they collide
+ANIMATE: bool
+    true if we want to produce a mp4 of the simulation
+"""
+
+L = 3.0
+N = 200
+T = 300
+R = 0.02
+ATTACH = False
+ANIMATE = True
+
+"""env defines the environment
+
+needs to be an instance of class
+Simple_Polygon from bounce-viz/src/simple_polygon.py
+
+see environments.py and bounce-viz/src/maps.py for more examples"""
+env = Simple_Polygon("poly1",poly1[0])
+
+"""bounds of animation window"""
+xs = [x for (x,y) in env.complete_vertex_list]
+ys = [y for (x,y) in env.complete_vertex_list]
+XMIN = np.amin(xs)
+XMAX = np.amax(xs)
+YMIN = np.amin(ys)
+YMAX = np.amax(ys)
+
+
+
+# Particle Configuration
+# ----------------------
 
 ## play around with numbers below 
 
 # type A particles:
     # faster
-    # smaller rotational drift
-    # escape from walls more quickly
-A_properties = {'vel':25.0, 'wall_prob': 0.05, 'beta': 0.2, 'mass':1}
+    # smaller rotational drift (beta)
+    # escape from walls more quickly (wall_prob, probability of staying stuck on wall)
+A_properties = {'vel':20.0, 'wall_prob': 0.05, 'beta': 0.2}
 
 # type B particles:
     # slower
     # more rotational drift
     # get stuck on walls more
-B_properties = {'vel':0.3, 'wall_prob': 0.2, 'beta': 0.5}
+B_properties = {'vel':7.0, 'wall_prob': 0.2, 'beta': 0.5}
 
 properties = { 'A-free':A_properties
              ,'B-free':B_properties
              ,'A-wall':A_properties
              ,'B-wall':B_properties
              }
-
-# Environment Configuration
-# --------------------
-
-env = simple_nonconv_p()
-

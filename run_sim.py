@@ -9,8 +9,8 @@ from configuration import *
 from utilities import normalize, Wire
 from random import random
 
-# display parameters
-# ------------------
+# Animation display parameters
+# ----------------------------
 
 color_map = { 'A-wall': (0, 0, 1)
             , 'A-free': (0, 0, 1)
@@ -130,26 +130,22 @@ if __name__ == '__main__':
     # initialize simulation
     system = System()
     data = {"pos":[[]]*T, "env":[[]]*T, "counts":[[]]*(T-1), "wires":[[]]*T}
-    simulation = ParticleSim(system, data, env, br = border_region,
-                      sticky=allow_attachment)
+    simulation = ParticleSim(system, data, env, br = R, sticky=ATTACH)
     simname = env.name+"_N"+str(N)+"_T"+str(T)+"_R"+str(start)+"_A"+str(action)
 
     # create N particles at random locations in the polygon
-    starting_poly = env
-    #start_pts = uniform_sample_from_poly(starting_poly, N)
-    start_pts = uniform_sample_along_circle(env, N, 2.0) #(x,x,circle size)
-    #CREATING PARTICLE WITH RANDOM VEL 
+    start_pts = uniform_sample_from_poly(env, N)
+    #start_pts = uniform_sample_along_circle(env, N, 2.0)
     for i in range(N):
         vel = normalize(np.array([random()-0.5, random()-0.5]))
         system.particle.append(Particle(position=start_pts[i], velocity=list(vel), radius = None, species= 'A-free', mass = None))
-        ##wpuld add "mass" here
+        ## would add "mass" here
     # run simulation for T steps
     simulation.run(T-1)
     print("ran sim for ",T,"steps")
 
     write_data(simulation.db, simname)
 
-    ANIMATE = True
     if ANIMATE:
         # make iterator to make animation easier
         d = Data(simulation.db)
@@ -161,8 +157,7 @@ if __name__ == '__main__':
         fig = plt.figure()
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
         ax = fig.add_subplot(111, aspect='equal', autoscale_on=False,
-                             xlim = (xMin,xMax) , ylim = (yMin, yMax)) #scale for animation window
-        #TODO MAKE into a variable then put into config file  
+                             xlim=(XMIN,XMAX) , ylim=(YMIN,YMAX)) #scale for animation window
         
         scat = ax.scatter(initxy[1][:,0]
                         , initxy[1][:,1]
