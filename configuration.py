@@ -24,7 +24,7 @@ ANIMATE: bool
 """
 
 L = 3.0
-N = 200
+N = 100
 T = 300
 R = 0.02
 ATTACH = False
@@ -36,7 +36,8 @@ needs to be an instance of class
 Simple_Polygon from bounce-viz/src/simple_polygon.py
 
 see environments.py and bounce-viz/src/maps.py for more examples"""
-env = Simple_Polygon("poly1",poly1[0])
+env = Simple_Polygon("smallpoly1",smallpoly1[0])
+#env = square(L)
 
 """bounds of animation window"""
 xs = [x for (x,y) in env.complete_vertex_list]
@@ -51,11 +52,13 @@ YMAX = np.amax(ys)
 # Particle Configuration
 # ----------------------
 
+## play around with numbers below 
+
 # type A particles:
     # faster
     # smaller rotational drift (beta)
     # escape from walls more quickly (wall_prob, probability of staying stuck on wall)
-A_properties = {'vel':20.0, 'wall_prob': 0.05, 'beta': 0.2}
+A_properties = {'vel':20., 'wall_prob': 0.05, 'beta': 0.2}
 
 # type B particles:
     # slower
@@ -68,4 +71,3 @@ properties = { 'A-free':A_properties
              ,'A-wall':A_properties
              ,'B-wall':B_properties
              }
-

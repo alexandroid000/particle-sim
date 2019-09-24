@@ -11,24 +11,26 @@ from helper.geometry_helper import AngleBetween # pylint: disable=unused-import
 from utilities import * # pylint: disable=unused-import
 from configuration import * # pylint: disable=unused-import
 
-
+###IDEA: Mass--> different types of collision ( in run function), different scatter
 # Simulation Backend
 # ------------------
 
 class Particle():
 
-    def __init__(self, position, velocity, radius = None, species = None): # constructoe of  a class
-        self.position = position
-        self.velocity = velocity
+    def __init__(self, position, velocity, radius = None, species = None, mass = None): # constructoe of  a class
+        self.position = np.array(position)
+        self.velocity = np.array(velocity)
         self.radius = radius
         self.species = species
+        self.mass = mass
 ### Q. why position and velocity are not set equal to "None"? Design choice? 
 ## self is a convention to write 
-class System():
+## Mass should be defined in Species of Particles 
+class System(): #list of particles
 
     def __init__(self):
         self.particle = []
-### Q. why do we need list for particle? 
+
 class ParticlePhysics(object):
 
     def __init__(self, system, env, delta=0.05,
@@ -43,7 +45,7 @@ class ParticlePhysics(object):
         self.sticky = sticky
         self.wires = wires
 
-    def neighbors(self, particle):
+    def neighbors(self, particle): #distinguishes if particles are neighboring each other 
         [x,y] = particle.position
         neighbors = []
         bounding_box = Simple_Polygon("bb",np.array([[x-R,y-R]
@@ -51,16 +53,11 @@ class ParticlePhysics(object):
                                                    , [x+R,y+R]
                                                    , [x-R,y+R]]))
         for p in self.system.particle:
-            if IsInPoly(p.position, bounding_box) and (p is not particle):
-                neighbors.append(p)
+            if IsInPoly(p.position, bounding_box) and (p is not particle): # does not count current particle as its own neighbor 
+                neighbors.append(p)                                        # confusing variable names
         return neighbors
-
-    def checkAttach(self, particle):
-        ns = self.neighbors(particle)
-        if ns == []:
-            return False, []
-        else:
-            return True, ns
+    # read about scoping 
+   
 
     # TODO: replace this with polygon offset calculator to make more robust for
     # nonconvex polygons
@@ -69,7 +66,7 @@ class ParticlePhysics(object):
         d, [ex,ey] = dist_dir_closest_edge(pt, self.env)
         normal_dir = normalize(np.array([-ey, ex])) # pointing into polygon
         return pt + (self.br - d) * normal_dir
-
+        ## How and where to apply 
     # move obstacle #c in the direction of dir
     # currently only internal obstacles can move, boundary is fixed
     def move_obstacle(self, c, dir):
@@ -84,14 +81,14 @@ class ParticlePhysics(object):
     def obstacle_interaction(self, particle, edge_dir, d):
         d, c, j = closest_edge(particle.position, self.env)
         if c != 0:
-            dr = self.next_dr(particle)
+            dr = self.next_dr(particle) #picks new direction 
 
             particle.position += self.delta*d*normalize(edge_dir)
             [ex,ey] = edge_dir
             push_dir = normalize(np.array([ey, -ex])) # pointing into obstacle
             self.move_obstacle(c, push_dir)
 
-    def scatter(self, particle, edge_dir):
+    def scatter(self, particle, edge_dir): # how the particles should leave the wall
         particle.species = particle.species[0]+'-free'
         [ex,ey] = edge_dir
         normal = normalize(np.array([-ey, ex])) # pointing into polygon
@@ -111,10 +108,11 @@ class ParticlePhysics(object):
         else:
             self.obstacle_interaction(particle, edge_dir, d)
 
-    def next_dr(self, particle):
+    def next_dr(self, particle): #Next direction 
 
         # Brownian motion, random step on unit circle
         [xi_x, xi_y] = normalize([random()-0.5, random()-0.5])
+        ##active Particle reading 
 
         # compute direction of next step
         v = properties[particle.species]['vel']
@@ -137,24 +135,24 @@ class ParticlePhysics(object):
         # take step, scaled by delta
         dr = self.delta*np.array([xdot, ydot])
         return dr
-
+    #T perimeter 
     def take_step(self, particle):
         dr = self.next_dr(particle)
         if IsInPoly(particle.position + dr, self.env):
             particle.position += dr
-        else:
+        else: #prevents particles going outside of polygon 
             particle.position = self.project_to_border_region(particle.position)
             particle.species = particle.species[0]+'-wall'
 
 class ParticleSim(ParticlePhysics):
 
-    def __init__(self, system, database, env, delta=0.05,
+    def __init__(self, system, database, env, delta=0.02,
                        br = 0.01, sticky = True, wires = [],
                        regions = [], policy = []):
 
         ParticlePhysics.__init__(self, system, env, delta, br, sticky, wires)
 
-        self.system = system
+        self.system = system #list of particle
         self.db = database
         self.delta = delta
         self.env = env
@@ -165,6 +163,42 @@ class ParticleSim(ParticlePhysics):
         self.wires = wires
         self.regions = regions
         self.policy = policy
+
+    #for elastic collision with A particles only
+    # bounce rules for elastic collision - update and assign random velocity and direction 
+    ## think about multiple particle collision - a function for two particle colliding - a function for 2 or more whichin elastic_collision function  
+    def elastic_collision(self, p, ns):
+        pairs = [(p, n) for n in ns]
+        for (p,n) in pairs:
+            self.twoCollide(p, n)
+
+    def twoCollide(self, particle1, particle2):
+        v1, v2 = particle1.velocity, particle2.velocity
+        v1x, v1y = v1
+        v2x, v2y = v2
+        m1, m2 = particle1.mass, particle2.mass
+        p1, p2 = particle1.position, particle2.position
+        x1x, x1y = p1
+        x2x, x2y = p2
+        v1prime = v1 - (2 * m2) / (m1 + m2) * (np.dot(v1-v2,p1-p2)) / ((x1x - x2x)**2 + (x1y - x2y)**2)  * (p1 - p2)
+        v2prime = v2 - (2 * m1) / (m1 + m2) * (np.dot(v2-v1,p2-p1)) / ((x2x - x1x)**2 + (x2y - x1y)**2) * (p2 - p1)
+        particle1.velocity = v1prime
+        particle2.velocity = v2prime
+     
+    def particle_collide(self, p): 
+        ns = self.neighbors(p) # checks bounding box for neighbors
+        if self.sticky and ns != []:
+            # TODO: add probability of sticking
+            # eventually, dependent on shape/angle of incidence
+            mode = p.species[2:]
+            p.species = 'B-'+ mode
+            # each particle is an object, when colliding all but one get removed
+            # TODO: update mass of the mega-particle
+            for n in ns:
+                self.system.particle.remove(n)
+        else:
+            if ns != []:
+                self.elastic_collision(p, ns)
 
 
     def run(self, steps):
@@ -179,6 +213,7 @@ class ParticleSim(ParticlePhysics):
                     states[j] = i
 
         # run sim for T steps
+        ##board pic 
         for i in range(steps):
 
             # log regions; only works at beginning of loop for some reason
@@ -198,15 +233,7 @@ class ParticleSim(ParticlePhysics):
                         states[j] = i
 
                 # detect particle-particle collisions
-                if self.sticky:
-                    val, ns = self.checkAttach(p)
-                    if val:
-                        p.radius = R*len(ns)
-                        mode = p.species[2:]
-                        p.species = 'B-'+mode
-                        for n in ns:
-                            self.system.particle.remove(n)
-
+                self.particle_collide(p)
                 # boundary mode
                 if p.species[2:] == "wall":
                     self.take_step_boundary(p)
