@@ -18,8 +18,8 @@ from configuration import * # pylint: disable=unused-import
 class Particle():
 
     def __init__(self, position, velocity, radius = None, species = None, mass = None): # constructoe of  a class
-        self.position = position
-        self.velocity = velocity
+        self.position = np.array(position)
+        self.velocity = np.array(velocity)
         self.radius = radius
         self.species = species
         self.mass = mass
@@ -146,7 +146,7 @@ class ParticlePhysics(object):
 
 class ParticleSim(ParticlePhysics):
 
-    def __init__(self, system, database, env, delta=0.05,
+    def __init__(self, system, database, env, delta=0.02,
                        br = 0.01, sticky = True, wires = [],
                        regions = [], policy = []):
 
@@ -163,34 +163,43 @@ class ParticleSim(ParticlePhysics):
         self.wires = wires
         self.regions = regions
         self.policy = policy
+
     #for elastic collision with A particles only
     # bounce rules for elastic collision - update and assign random velocity and direction 
     ## think about multiple particle collision - a function for two particle colliding - a function for 2 or more whichin elastic_collision function  
-    def elastic_collision(self, p):
-        if not self.sticky:
-                        ns = self.neighbors(p)
-                        oldVelocity = p.velocity #wrap
-                        neighbor_velocity = [n.velocity for n in ns] #list comprehension  
-                        neighbor_mass = [n.mass for n in ns] #+ new mass, grab list of particles with mass, or use += 
-                        newVelocity = neighbor_velocity + oldVelocity #update list? 
-                        old_Momentum = oldVelocity * p.mass
-                        new_Momentum = newVelocity * p.mass 
-                        #bouncing rule: update velocity, mass( won't change)
-                        #calling "take_step" immediately after collision 
-    #For inelastic collision - make a line that updates mass 
+    def elastic_collision(self, p, ns):
+        pairs = [(p, n) for n in ns]
+        for (p,n) in pairs:
+            self.twoCollide(p, n)
+
+    def twoCollide(self, particle1, particle2):
+        v1, v2 = particle1.velocity, particle2.velocity
+        v1x, v1y = v1
+        v2x, v2y = v2
+        m1, m2 = particle1.mass, particle2.mass
+        p1, p2 = particle1.position, particle2.position
+        x1x, x1y = p1
+        x2x, x2y = p2
+        v1prime = v1 - (2 * m2) / (m1 + m2) * (np.dot(v1-v2,p1-p2)) / ((x1x - x2x)**2 + (x1y - x2y)**2)  * (p1 - p2)
+        v2prime = v2 - (2 * m1) / (m1 + m2) * (np.dot(v2-v1,p2-p1)) / ((x2x - x1x)**2 + (x2y - x1y)**2) * (p2 - p1)
+        particle1.velocity = v1prime
+        particle2.velocity = v2prime
      
     def particle_collide(self, p): 
-        if self.sticky:
-                    ns = self.neighbors(p) #checks radius for neighbors  
-                    #probability of attaching particles add "if" statement 
-                    if ns != []: 
-                        mode = p.species[2:] 
-                        p.species = 'B-'+ mode
-                        for n in ns:
-                            self.system.particle.remove(n)
-#update mass if they stick 
-# each particle is a class, when colliding one class gets removed
-## careful with removing a class - 
+        ns = self.neighbors(p) # checks bounding box for neighbors
+        if self.sticky and ns != []:
+            # TODO: add probability of sticking
+            # eventually, dependent on shape/angle of incidence
+            mode = p.species[2:]
+            p.species = 'B-'+ mode
+            # each particle is an object, when colliding all but one get removed
+            # TODO: update mass of the mega-particle
+            for n in ns:
+                self.system.particle.remove(n)
+        else:
+            if ns != []:
+                self.elastic_collision(p, ns)
+
 
     def run(self, steps):
 

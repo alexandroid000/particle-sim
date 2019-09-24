@@ -138,8 +138,7 @@ if __name__ == '__main__':
     #start_pts = uniform_sample_along_circle(env, N, 2.0)
     for i in range(N):
         vel = normalize(np.array([random()-0.5, random()-0.5]))
-        system.particle.append(Particle(position=start_pts[i], velocity=list(vel), radius = None, species= 'A-free', mass = None))
-        ## would add "mass" here
+        system.particle.append(Particle(position=start_pts[i], velocity=list(vel), radius = None, species= 'A-free', mass = 1.0))
     # run simulation for T steps
     simulation.run(T-1)
     print("ran sim for ",T,"steps")
