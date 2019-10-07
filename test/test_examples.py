@@ -13,6 +13,35 @@ class TestExamples(unittest.TestCase):
     def setUp(self):
         return
 
+    def test_scatter(self):
+        p1 = [0.,0.]
+        p2 = [1.,0.]
+        m1, m2 = 1., 1.
+        v1 = [1.,1.]
+        v2 = [-1., 1.]
+
+        particle1 = Particle(position= p1,
+                             velocity= v1,
+                             radius = None,
+                             species= 'A-free',
+                             mass = m1)
+
+        particle2 = Particle(position= p2,
+                             velocity= v2,
+                             radius = None,
+                             species= 'A-free',
+                             mass = m2)
+
+        twoCollide(particle1, particle2)
+
+        np.testing.assert_almost_equal(particle1.velocity,
+                                       [-1., 1.],
+                                       decimal=7, verbose=True)
+        np.testing.assert_almost_equal(particle2.velocity,
+                                       [1., 1.],
+                                       decimal=7, verbose=True)
+
+
     def test_magnet(self):
         o = np.array([0.,0.])
         pt1 = np.array([random(),random()])
@@ -48,11 +77,3 @@ class TestExamples(unittest.TestCase):
         self.assertSequenceEqual(decode_policy(encode_policy(test2)), test2)
         self.assertSequenceEqual(decode_policy(encode_policy(test3)), test3)
 
-#    def test_neighbors(self):
-#        self.assertSequenceEqual(neighbors(0, env1), [4])
-#        self.assertSequenceEqual(neighbors(10, env1), [5,14,9])
-#
-#    def test_envs(self):
-#        self.assertTrue(check_grid_topo(env1))
-#        self.assertTrue(check_grid_topo(env2))
-#

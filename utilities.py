@@ -5,6 +5,26 @@ from simple_polygon import Simple_Polygon
 from random import uniform
 from helper.shoot_ray_helper import IsInPoly, ClosestPtAlongRay
 
+
+# Collision Utilities
+# -------------------
+
+
+# elastic scattering
+def twoCollide(particle1, particle2):
+    v1, v2 = particle1.velocity, particle2.velocity
+    v1x, v1y = v1
+    v2x, v2y = v2
+    m1, m2 = particle1.mass, particle2.mass
+    p1, p2 = particle1.position, particle2.position
+    x1x, x1y = p1
+    x2x, x2y = p2
+    v1prime = v1 - (2 * m2) / (m1 + m2) * (np.dot(v1-v2,p1-p2)) / ((x1x - x2x)**2 + (x1y - x2y)**2)  * (p1 - p2)
+    v2prime = v2 - (2 * m1) / (m1 + m2) * (np.dot(v2-v1,p2-p1)) / ((x2x - x1x)**2 + (x2y - x1y)**2) * (p2 - p1)
+    particle1.velocity = v1prime
+    particle2.velocity = v2prime
+
+
 # Environment Utilities
 # -----------------
 
