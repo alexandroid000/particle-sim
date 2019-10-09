@@ -98,9 +98,7 @@ def softRepulse(particle1, particle2, K):
     f2 = f*r12
 
     particle1.velocity += f1/m1
-    particle1.velocity = normalize(particle1.velocity)
     particle2.velocity += f2/m2
-    particle2.velocity = normalize(particle2.velocity)
 
 
 # Environment Utilities

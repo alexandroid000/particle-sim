@@ -59,7 +59,6 @@ class ParticlePhysics(object):
         return neighbors
     # read about scoping 
    
-
     # TODO: replace this with polygon offset calculator to make more robust for
     # nonconvex polygons
     # look into pyclipper library
@@ -67,29 +66,34 @@ class ParticlePhysics(object):
         d, [ex,ey] = dist_dir_closest_edge(pt, self.env)
         normal_dir = normalize(np.array([-ey, ex])) # pointing into polygon
         return pt + (self.br - d) * normal_dir
-        ## How and where to apply 
+
     # move obstacle #c in the direction of dir
     # currently only internal obstacles can move, boundary is fixed
     def move_obstacle(self, c, dir):
         old_poly = [[v for (i,v) in c] for c in deepcopy(self.env.vertex_list_per_poly)]
-        new_poly = [(v + 0.1*dir) for v in old_poly[c]]
+        new_poly = [(v + dir) for v in old_poly[c]]
         new_obstacles = old_poly[:c]+[new_poly]+old_poly[(c+1):]
         print("moved obstacle",c,"along vector",dir)
         print(len(new_obstacles),"new obstacles:",new_obstacles)
         new_env = Simple_Polygon(self.env.name, new_obstacles[0], new_obstacles[1:])
         self.env = new_env
 
-    def obstacle_interaction(self, particle, edge_dir, d):
+    # only called if a moveable obstacle (component c != 0)
+    def obstacle_interaction(self, particle, edge_dir):
         d, c, j = closest_edge(particle.position, self.env)
         if c != 0:
-            dr = self.next_dr(particle) #picks new direction 
-
-            particle.position += self.delta*d*normalize(edge_dir)
+            dr = self.next_dr(particle) #picks new direction
             [ex,ey] = edge_dir
-            push_dir = normalize(np.array([ey, -ex])) # pointing into obstacle
-            self.move_obstacle(c, push_dir)
+            proj_dr_onto_edge = (dr.dot(edge_dir))/np.linalg.norm(edge_dir)
+            particle.position += proj_dr_onto_edge
 
-    def scatter(self, particle, edge_dir): # how the particles should leave the wall
+            push_dir = normalize(np.array([ey, -ex])) # pointing into obstacle
+            proj_dr_onto_normal = (dr.dot(push_dir))/np.linalg.norm(push_dir)
+            self.move_obstacle(c, proj_dr_onto_normal)
+
+
+    # how the particles should leave the static obstacles
+    def scatter(self, particle, edge_dir):
         particle.species = particle.species[0]+'-free'
         [ex,ey] = edge_dir
         normal = normalize(np.array([-ey, ex])) # pointing into polygon
@@ -115,13 +119,12 @@ class ParticlePhysics(object):
 
         # stay on wall, impart force
         else:
-            self.obstacle_interaction(particle, edge_dir, d)
+            self.obstacle_interaction(particle, edge_dir)
 
     def next_dr(self, particle): #Next direction 
 
         # Brownian motion, random step on unit circle
         [xi_x, xi_y] = normalize([random()-0.5, random()-0.5])
-        ##active Particle reading 
 
         # compute direction of next step
         v = properties[particle.species]['vel']
@@ -144,7 +147,7 @@ class ParticlePhysics(object):
         # take step, scaled by delta
         dr = self.delta*np.array([xdot, ydot])
         return dr
-    #T perimeter 
+
     def take_step(self, particle):
         dr = self.next_dr(particle)
         if IsInPoly(particle.position + dr, self.env):
