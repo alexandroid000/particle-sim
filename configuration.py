@@ -17,16 +17,19 @@ T: int
     number of time steps in simulator
 R: float
     characteristic "collision" length scale: width of bounding box for particles
+K: float
+    magnitude of repulsive force between particles
 ATTACH: bool
     true if we want particles to stick together when they collide
 ANIMATE: bool
     true if we want to produce a mp4 of the simulation
 """
 
-L = 3.0
+L = 4.0
 N = 100
 T = 300
-R = 0.02
+R = 0.05*L
+K = 0.5
 ATTACH = False
 ANIMATE = True
 
@@ -36,8 +39,8 @@ needs to be an instance of class
 Simple_Polygon from bounce-viz/src/simple_polygon.py
 
 see environments.py and bounce-viz/src/maps.py for more examples"""
-env = Simple_Polygon("smallpoly1",smallpoly1[0])
-#env = square(L)
+#env = Simple_Polygon("smallpoly1",smallpoly1[0])
+env = square(L)
 
 """bounds of animation window"""
 xs = [x for (x,y) in env.complete_vertex_list]
@@ -58,13 +61,13 @@ YMAX = np.amax(ys)
     # faster
     # smaller rotational drift (beta)
     # escape from walls more quickly (wall_prob, probability of staying stuck on wall)
-A_properties = {'vel':20., 'wall_prob': 0.05, 'beta': 0.2}
+A_properties = {'vel':1., 'wall_prob': 0.05, 'beta': 0.2}
 
 # type B particles:
     # slower
     # more rotational drift
     # get stuck on walls more
-B_properties = {'vel':7.0, 'wall_prob': 0.2, 'beta': 0.5}
+B_properties = {'vel':0.7, 'wall_prob': 0.2, 'beta': 0.5}
 
 properties = { 'A-free':A_properties
              ,'B-free':B_properties

@@ -130,7 +130,7 @@ if __name__ == '__main__':
     # initialize simulation
     system = System()
     data = {"pos":[[]]*T, "env":[[]]*T, "counts":[[]]*(T-1), "wires":[[]]*T}
-    simulation = ParticleSim(system, data, env, br = R, sticky=ATTACH)
+    simulation = ParticleSim(system, data, env, br = R, k = K, sticky=ATTACH)
     simname = env.name+"_N"+str(N)+"_T"+str(T)+"_R"+str(start)+"_A"+str(action)
 
     # create N particles at random locations in the polygon
@@ -138,10 +138,13 @@ if __name__ == '__main__':
     #start_pts = uniform_sample_along_circle(env, N, 2.0)
     for i in range(N):
         vel = normalize(np.array([random()-0.5, random()-0.5]))
-        system.particle.append(Particle(position=start_pts[i], velocity=list(vel), radius = None, species= 'A-free', mass = 1.0))
+        system.particle.append(Particle(position=start_pts[i],
+                                        velocity=list(vel),
+                                        radius = R,
+                                        species= 'A-free',
+                                        mass = 1.0))
     # run simulation for T steps
     simulation.run(T-1)
-    print("ran sim for ",T,"steps")
 
     write_data(simulation.db, simname)
 

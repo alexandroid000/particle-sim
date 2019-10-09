@@ -5,6 +5,49 @@ from simple_polygon import Simple_Polygon
 from random import uniform
 from helper.shoot_ray_helper import IsInPoly, ClosestPtAlongRay
 
+# Geometric Operations
+# --------------------
+
+# http://mathworld.wolfram.com/Point-LineDistance2-Dimensional.html
+def closest_edge(pt, poly):
+    [x0,y0] = pt
+    vs = poly.vertex_list_per_poly
+    n = poly.size
+    components = len(vs)
+    min_d = 100000000000
+    closest_component = -1
+    closest_edge = -1
+    # find closest edge over external boundary and holes
+    for (i, component) in enumerate(vs):
+        m = len(component)
+        for j in range(m):
+            [x1, y1], [x2,y2] = component[j][1], component[(j+1) % m][1]
+            d = abs((x2-x1)*(y1-y0) - (x1-x0)*(y2-y1)) / np.sqrt((x2-x1)**2 + (y2-y1)**2)
+            if d < min_d:
+                min_d = d
+                closest_component = i
+                closest_edge = j
+    return min_d, closest_component, closest_edge
+
+def dist_dir_closest_edge(pt, poly):
+    d, c, j = closest_edge(pt, poly)
+    vs = poly.vertex_list_per_poly
+    csize = len(vs[c])
+    edge_vect = vs[c][(j + 1) % csize][1] - vs[c][j][1]
+    return d, edge_vect
+
+def normalize(vector):
+    norm = np.linalg.norm(vector)
+    return vector/norm
+
+def rotate_vector(v, theta):
+    vx, vy = v[0], v[1]
+    return np.array( [np.cos(theta)*vx - np.sin(theta)*vy,
+                     np.sin(theta)*vx + np.cos(theta)*vy])
+
+def midpoint(pt1, pt2):
+    return (pt1+pt2)/2
+
 
 # Collision Utilities
 # -------------------
@@ -23,6 +66,35 @@ def twoCollide(particle1, particle2):
     v2prime = v2 - (2 * m1) / (m1 + m2) * (np.dot(v2-v1,p2-p1)) / ((x2x - x1x)**2 + (x2y - x1y)**2) * (p2 - p1)
     particle1.velocity = v1prime
     particle2.velocity = v2prime
+
+def softRepulse(particle1, particle2, K):
+    v1, v2 = particle1.velocity, particle2.velocity
+    v1x, v1y = v1
+    v2x, v2y = v2
+    m1, m2 = particle1.mass, particle2.mass
+    p1, p2 = np.array(particle1.position), np.array(particle2.position)
+    r1, r2 = particle1.radius, particle2.radius
+    # vector from p1 to p2
+    r12 = normalize(p2-p1)
+    # vector from p2 to p1
+    r21 = normalize(p1-p2)
+
+    # magnitude of repulsive force proportional to distance
+    rlen = np.linalg.norm(p1-p2)
+    if rlen < r1+r2:
+        f = K*(r1 + r2 - rlen)
+    else:
+        f = 0
+
+    # force on particle 1
+    f1 = f*r21
+    # force on particle 2
+    f2 = f*r12
+
+    particle1.velocity += f1/m1
+    particle1.velocity = normalize(particle1.velocity)
+    particle2.velocity += f2/m2
+    particle2.velocity = normalize(particle2.velocity)
 
 
 # Environment Utilities
@@ -98,49 +170,6 @@ def uniform_sample_along_circle(poly, n, r):
     return samples
 
 
-
-# Geometric Operations
-# --------------------
-
-# http://mathworld.wolfram.com/Point-LineDistance2-Dimensional.html
-def closest_edge(pt, poly):
-    [x0,y0] = pt
-    vs = poly.vertex_list_per_poly
-    n = poly.size
-    components = len(vs)
-    min_d = 100000000000
-    closest_component = -1
-    closest_edge = -1
-    # find closest edge over external boundary and holes
-    for (i, component) in enumerate(vs):
-        m = len(component)
-        for j in range(m):
-            [x1, y1], [x2,y2] = component[j][1], component[(j+1) % m][1]
-            d = abs((x2-x1)*(y1-y0) - (x1-x0)*(y2-y1)) / np.sqrt((x2-x1)**2 + (y2-y1)**2)
-            if d < min_d:
-                min_d = d
-                closest_component = i
-                closest_edge = j
-    return min_d, closest_component, closest_edge
-
-def dist_dir_closest_edge(pt, poly):
-    d, c, j = closest_edge(pt, poly)
-    vs = poly.vertex_list_per_poly
-    csize = len(vs[c])
-    edge_vect = vs[c][(j + 1) % csize][1] - vs[c][j][1]
-    return d, edge_vect
-
-def normalize(vector):
-    norm = np.linalg.norm(vector)
-    return vector/norm
-
-def rotate_vector(v, theta):
-    vx, vy = v[0], v[1]
-    return np.array( [np.cos(theta)*vx - np.sin(theta)*vy,
-                     np.sin(theta)*vx + np.cos(theta)*vy])
-
-def midpoint(pt1, pt2):
-    return (pt1+pt2)/2
 
 # Magnetic flow field generation
 # all the ugly packing/unpacking is to make matplotlib stuff work

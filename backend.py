@@ -34,7 +34,7 @@ class System(): #list of particles
 class ParticlePhysics(object):
 
     def __init__(self, system, env, delta=0.05,
-                       br = 0.01, sticky = True,
+                       br = 0.01, k = 1.0, sticky = True,
                        wires = []):
         self.system = system
         self.env = env
@@ -42,6 +42,7 @@ class ParticlePhysics(object):
         self.vs = self.env.vertex_list_per_poly
         self.n = len(self.vs[0]) # outer boundary
         self.br = br
+        self.K = k
         self.sticky = sticky
         self.wires = wires
 
@@ -97,6 +98,14 @@ class ParticlePhysics(object):
         th_out = np.pi*random() - np.pi/2
         particle.velocity = normalize(rotate_vector(normal, th_out))
 
+    # TODO: order of collisions is arbitrary if more than one neighbor in
+    # bounding box. Is there a more principled way to do this?
+    def group_collision(self, particle, ns):
+        pairs = [(particle, n) for n in ns]
+        for (particle,n) in pairs:
+            #twoCollide(particle, n) # uncomment for elastic collision
+            softRepulse(particle, n, self.K)
+
     def take_step_boundary(self, particle):
         d, edge_dir = dist_dir_closest_edge(particle.position, self.env)
 
@@ -147,7 +156,7 @@ class ParticlePhysics(object):
 class ParticleSim(ParticlePhysics):
 
     def __init__(self, system, database, env, delta=0.02,
-                       br = 0.01, sticky = True, wires = [],
+                       br = 0.01, k = 1.0, sticky = True, wires = [],
                        regions = [], policy = []):
 
         ParticlePhysics.__init__(self, system, env, delta, br, sticky, wires)
@@ -159,18 +168,12 @@ class ParticleSim(ParticlePhysics):
         self.vs = self.env.vertex_list_per_poly
         self.n = len(self.vs[0]) # outer boundary
         self.br = br
+        self.K = k
         self.sticky = sticky
         self.wires = wires
         self.regions = regions
         self.policy = policy
 
-    #for elastic collision with A particles only
-    # bounce rules for elastic collision - update and assign random velocity and direction 
-    ## think about multiple particle collision - a function for two particle colliding - a function for 2 or more whichin elastic_collision function  
-    def elastic_collision(self, particle, ns):
-        pairs = [(particle, n) for n in ns]
-        for (particle,n) in pairs:
-            twoCollide(particle, n)
 
     def particle_collide(self, p): 
         ns = self.neighbors(p) # checks bounding box for neighbors
@@ -185,10 +188,11 @@ class ParticleSim(ParticlePhysics):
                 self.system.particle.remove(n)
         else:
             if ns != []:
-                self.elastic_collision(p, ns)
+                self.group_collision(p, ns)
 
 
     def run(self, steps):
+        print("Running Simulation for",steps,"steps")
 
         # initialize region counts
         region_counts = [0]*len(self.regions)
@@ -202,6 +206,9 @@ class ParticleSim(ParticlePhysics):
         # run sim for T steps
         ##board pic 
         for i in range(steps):
+
+            if i % 10 == 0:
+                print("Step",i)
 
             # log regions; only works at beginning of loop for some reason
             joint_state = encodeJointState(states)
