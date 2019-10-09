@@ -5,6 +5,8 @@ from simple_polygon import Simple_Polygon
 from random import uniform
 from helper.shoot_ray_helper import IsInPoly, ClosestPtAlongRay
 
+EPSILON = 0.000000001
+
 # Geometric Operations
 # --------------------
 
@@ -38,7 +40,10 @@ def dist_dir_closest_edge(pt, poly):
 
 def normalize(vector):
     norm = np.linalg.norm(vector)
-    return vector/norm
+    if norm > EPSILON:
+        return vector/norm
+    else:
+        return 0.0*vector
 
 def rotate_vector(v, theta):
     vx, vy = v[0], v[1]
@@ -87,6 +92,7 @@ def softRepulse(particle1, particle2, K):
         f = 0
 
     # force on particle 1
+    # TODO: fix to incorporate direction of heading
     f1 = f*r21
     # force on particle 2
     f2 = f*r12

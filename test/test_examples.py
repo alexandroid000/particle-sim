@@ -42,6 +42,34 @@ class TestExamples(unittest.TestCase):
                                        decimal=7, verbose=True)
 
 
+    def test_repulse(self):
+        p1 = [0.,0.]
+        p2 = [1.,0.]
+        m1, m2 = 1., 1.
+        v1 = [1.,0.]
+        v2 = [-1., 0.]
+
+        particle1 = Particle(position= p1,
+                             velocity= v1,
+                             radius = 1.0,
+                             species= 'A-free',
+                             mass = m1)
+
+        particle2 = Particle(position= p2,
+                             velocity= v2,
+                             radius = 1.0,
+                             species= 'A-free',
+                             mass = m2)
+
+        softRepulse(particle1, particle2, 1)
+
+        np.testing.assert_almost_equal(particle1.velocity,
+                                       [0., 0.],
+                                       decimal=7, verbose=True)
+        np.testing.assert_almost_equal(particle2.velocity,
+                                       [0., 0.],
+                                       decimal=7, verbose=True)
+
     def test_magnet(self):
         o = np.array([0.,0.])
         pt1 = np.array([random(),random()])
