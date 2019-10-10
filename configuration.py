@@ -16,6 +16,8 @@ T: int
     number of time steps in simulator
 R: float
     characteristic "collision" length scale: width of bounding box for particles
+BR: float
+    characteristic "collision" length scale with environment boundaries
 K: float
     magnitude of repulsive force between particles
 ATTACH: bool
