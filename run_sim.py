@@ -155,6 +155,7 @@ if __name__ == '__main__':
                                             mass = 1.0))
     # run simulation for T steps
     simulation.run(T-1)
+    print("Finished Simulation, Writing Data...")
 
     write_data(simulation.db, simname)
 
