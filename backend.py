@@ -8,7 +8,7 @@ import sys
 sys.path.insert(0, "./bounce-viz/src/")
 from helper.shoot_ray_helper import IsInPoly, ClosestPtAlongRay # pylint: disable=unused-import
 from helper.geometry_helper import AngleBetween # pylint: disable=unused-import
-from utilities import twoCollide
+from utilities import *
 from configuration import * # pylint: disable=unused-import
 
 ###IDEA: Mass--> different types of collision ( in run function), different scatter
@@ -73,23 +73,29 @@ class ParticlePhysics(object):
         old_poly = [[v for (i,v) in c] for c in deepcopy(self.env.vertex_list_per_poly)]
         new_poly = [(v + dir) for v in old_poly[c]]
         new_obstacles = old_poly[:c]+[new_poly]+old_poly[(c+1):]
-        print("moved obstacle",c,"along vector",dir)
-        print(len(new_obstacles),"new obstacles:",new_obstacles)
+        #print("moved obstacle",c,"along vector",dir)
+        #print(len(new_obstacles),"new obstacles:",new_obstacles)
         new_env = Simple_Polygon(self.env.name, new_obstacles[0], new_obstacles[1:])
         self.env = new_env
 
-    # only called if a moveable obstacle (component c != 0)
     def obstacle_interaction(self, particle, edge_dir):
+        [ex,ey] = edge_dir
         d, c, j = closest_edge(particle.position, self.env)
-        if c != 0:
+
+        if particle.species[0] == 'A':
             dr = self.next_dr(particle) #picks new direction
-            [ex,ey] = edge_dir
             proj_dr_onto_edge = (dr.dot(edge_dir))/np.linalg.norm(edge_dir)
             particle.position += proj_dr_onto_edge
 
-            push_dir = normalize(np.array([ey, -ex])) # pointing into obstacle
-            proj_dr_onto_normal = (dr.dot(push_dir))/np.linalg.norm(push_dir)
-            self.move_obstacle(c, proj_dr_onto_normal)
+            # only called if a moveable obstacle (component c != 0)
+            if c != 0:
+                push_dir = normalize(np.array([ey, -ex])) # pointing into obstacle
+                proj_dr_onto_normal = (dr.dot(push_dir))/np.linalg.norm(push_dir)
+                self.move_obstacle(c, proj_dr_onto_normal)
+        else: 
+            normal = normalize(np.array([-ey, ex])) # pointing into polygon
+            th_out = -(np.pi/2. - 0.2)
+            particle.velocity = normalize(rotate_vector(normal, th_out))
 
 
     # how the particles should leave the static obstacles
@@ -98,8 +104,11 @@ class ParticlePhysics(object):
         [ex,ey] = edge_dir
         normal = normalize(np.array([-ey, ex])) # pointing into polygon
 
-        # rotate particle's velocity uniformly out from wall
-        th_out = np.pi*random() - np.pi/2
+        if particle.species[0] == 'A':
+            # rotate particle's velocity uniformly out from wall
+            th_out = np.pi*random() - np.pi/2
+        else:
+            th_out = -(np.pi/2. - 0.2)
         particle.velocity = normalize(rotate_vector(normal, th_out))
 
     # TODO: order of collisions is arbitrary if more than one neighbor in
@@ -109,6 +118,15 @@ class ParticlePhysics(object):
         for (particle,n) in pairs:
             #twoCollide(particle, n) # uncomment for elastic collision
             softRepulse(particle, n, self.K)
+
+    def take_step(self, particle):
+        dr = self.next_dr(particle)
+        if IsInPoly(particle.position + dr, self.env):
+            particle.position += dr
+        else: #prevents particles going outside of polygon 
+            particle.position = self.project_to_border_region(particle.position)
+            d, edge_dir = dist_dir_closest_edge(particle.position, self.env)
+            self.obstacle_interaction(particle, edge_dir)
 
     def take_step_boundary(self, particle):
         d, edge_dir = dist_dir_closest_edge(particle.position, self.env)
@@ -145,16 +163,9 @@ class ParticlePhysics(object):
         particle.velocity = normalize(particle.velocity)
 
         # take step, scaled by delta
-        dr = self.delta*np.array([xdot, ydot])
+        dr = self.delta*normalize(np.array([xdot, ydot]))
         return dr
 
-    def take_step(self, particle):
-        dr = self.next_dr(particle)
-        if IsInPoly(particle.position + dr, self.env):
-            particle.position += dr
-        else: #prevents particles going outside of polygon 
-            particle.position = self.project_to_border_region(particle.position)
-            particle.species = particle.species[0]+'-wall'
 
 class ParticleSim(ParticlePhysics):
 

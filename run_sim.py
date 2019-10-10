@@ -6,7 +6,7 @@ import matplotlib.animation as animation
 
 from backend import *
 from configuration import *
-from utilities import normalize, Wire
+from utilities import normalize, uniform_sample_along_circle, uniform_sample_from_poly
 from random import random
 
 # Animation display parameters
@@ -140,11 +140,19 @@ if __name__ == '__main__':
     #start_pts = uniform_sample_along_circle(env, N, 2.0)
     for i in range(N):
         vel = normalize(np.array([random()-0.5, random()-0.5]))
-        system.particle.append(Particle(position=start_pts[i],
-                                        velocity=list(vel),
-                                        radius = R,
-                                        species= 'A-free',
-                                        mass = 1.0))
+        if random() < FRAC_BALLISTIC:
+            system.particle.append(Particle(position=start_pts[i],
+                                            velocity=list(vel),
+                                            radius = R,
+                                            species= 'B-free',
+                                            mass = 100.0))
+
+        else:
+            system.particle.append(Particle(position=start_pts[i],
+                                            velocity=list(vel),
+                                            radius = R,
+                                            species= 'A-free',
+                                            mass = 1.0))
     # run simulation for T steps
     simulation.run(T-1)
 
