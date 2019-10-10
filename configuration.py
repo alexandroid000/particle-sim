@@ -27,8 +27,9 @@ ANIMATE: bool
 
 L = 4.0
 N = 100
-T = 300
+T = 100
 R = 0.05*L
+BR = 0.01
 K = 0.5
 ATTACH = False
 ANIMATE = True

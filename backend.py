@@ -35,13 +35,14 @@ class ParticlePhysics(object):
 
     def __init__(self, system, env, delta=0.05,
                        br = 0.01, k = 1.0, sticky = True,
-                       wires = []):
+                       r = 0.01, wires = []):
         self.system = system
         self.env = env
         self.delta = delta
         self.vs = self.env.vertex_list_per_poly
         self.n = len(self.vs[0]) # outer boundary
         self.br = br
+        self.R = r
         self.K = k
         self.sticky = sticky
         self.wires = wires
@@ -49,15 +50,14 @@ class ParticlePhysics(object):
     def neighbors(self, particle): #distinguishes if particles are neighboring each other 
         [x,y] = particle.position
         neighbors = []
-        bounding_box = Simple_Polygon("bb",np.array([[x-R,y-R]
-                                                   , [x+R,y-R]
-                                                   , [x+R,y+R]
-                                                   , [x-R,y+R]]))
+        bounding_box = Simple_Polygon("bb",np.array([[x-self.R,y-self.R]
+                                                   , [x+self.R,y-self.R]
+                                                   , [x+self.R,y+self.R]
+                                                   , [x-self.R,y+self.R]]))
         for p in self.system.particle:
             if IsInPoly(p.position, bounding_box) and (p is not particle): # does not count current particle as its own neighbor 
                 neighbors.append(p)                                        # confusing variable names
         return neighbors
-    # read about scoping 
    
     # TODO: replace this with polygon offset calculator to make more robust for
     # nonconvex polygons
@@ -159,10 +159,10 @@ class ParticlePhysics(object):
 class ParticleSim(ParticlePhysics):
 
     def __init__(self, system, database, env, delta=0.02,
-                       br = 0.01, k = 1.0, sticky = True, wires = [],
+                       br = 0.01, k = 1.0, sticky = True, r = 0.01, wires = [],
                        regions = [], policy = []):
 
-        ParticlePhysics.__init__(self, system, env, delta, br, sticky, wires)
+        ParticlePhysics.__init__(self, system, env, delta, br, k, sticky, r, wires)
 
         self.system = system #list of particle
         self.db = database

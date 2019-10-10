@@ -130,7 +130,9 @@ if __name__ == '__main__':
     # initialize simulation
     system = System()
     data = {"pos":[[]]*T, "env":[[]]*T, "counts":[[]]*(T-1), "wires":[[]]*T}
-    simulation = ParticleSim(system, data, env, br = R, k = K, sticky=ATTACH)
+    simulation = ParticleSim(system, data, env,
+                             br = BR, k = K, sticky=ATTACH,
+                             r = R)
     simname = env.name+"_N"+str(N)+"_T"+str(T)+"_R"+str(start)+"_A"+str(action)
 
     # create N particles at random locations in the polygon
