@@ -1,6 +1,7 @@
 import numpy as np
 from copy import copy, deepcopy
 from random import random
+from math import ceil, floor
 
 
 # using bounce-viz as a submodule for geometric utilities
@@ -9,7 +10,6 @@ sys.path.insert(0, "./bounce-viz/src/")
 from helper.shoot_ray_helper import IsInPoly, ClosestPtAlongRay # pylint: disable=unused-import
 from helper.geometry_helper import AngleBetween # pylint: disable=unused-import
 from utilities import *
-from configuration import * # pylint: disable=unused-import
 
 ###IDEA: Mass--> different types of collision ( in run function), different scatter
 # Simulation Backend
@@ -29,7 +29,7 @@ class Particle():
 class System(): #list of particles
 
     def __init__(self):
-        self.particle = []
+        self.particles = []
 
 class ParticlePhysics(object):
 
@@ -54,7 +54,7 @@ class ParticlePhysics(object):
                                                    , [x+self.R,y-self.R]
                                                    , [x+self.R,y+self.R]
                                                    , [x-self.R,y+self.R]]))
-        for p in self.system.particle:
+        for p in self.system.particles:
             if IsInPoly(p.position, bounding_box) and (p is not particle): # does not count current particle as its own neighbor 
                 neighbors.append(p)                                        # confusing variable names
         return neighbors
@@ -182,12 +182,51 @@ class ParticleSim(ParticlePhysics):
         self.vs = self.env.vertex_list_per_poly
         self.n = len(self.vs[0]) # outer boundary
         self.br = br
+        self.R = r
         self.K = k
         self.sticky = sticky
         self.wires = wires
         self.regions = regions
         self.policy = policy
 
+        xs = [x for (x,y) in env.complete_vertex_list]
+        ys = [y for (x,y) in env.complete_vertex_list]
+        self.XMIN = np.amin(xs)
+        self.XMAX = np.amax(xs)
+        self.YMIN = np.amin(ys)
+        self.YMAX = np.amax(ys)
+
+        self.xN = int(ceil(self.XMAX - self.XMIN)/(2.0*self.R))
+        self.yN = int(ceil(self.YMAX - self.YMIN)/(2.0*self.R))
+
+        self.cells = self.initialize_grid()
+
+    def initialize_grid(self):
+
+        cells = {x:{y:[] for y in range(self.yN)} for x in range(self.xN)}
+
+        for p in self.system.particles:
+            x,y = self.cell(p)
+            cells[x][y] = p
+
+        return cells
+
+    def cell(self, particle):
+        x = floor((particle.position[0] - self.XMIN)/(2.*self.R))
+        y = floor((particle.position[1] - self.YMIN)/(2.*self.R))
+        return x,y
+
+    def neighbor_cells(self, x, y):
+        ns = []
+        if x - 1 != -1:
+            ns.append(x-1)
+        if x + 1 != self.XMAX + 1:
+            ns.append(x+1)
+        if y - 1 != -1:
+            ns.append(y-1)
+        if y + 1 != self.YMAX + 1:
+            ns.append(y+1)
+        return ns
 
     def particle_collide(self, p): 
         ns = self.neighbors(p) # checks bounding box for neighbors
@@ -199,7 +238,7 @@ class ParticleSim(ParticlePhysics):
             # each particle is an object, when colliding all but one get removed
             # TODO: update mass of the mega-particle
             for n in ns:
-                self.system.particle.remove(n)
+                self.system.particles.remove(n)
         else:
             if ns != []:
                 self.group_collision(p, ns)
@@ -210,8 +249,8 @@ class ParticleSim(ParticlePhysics):
 
         # initialize region counts
         region_counts = [0]*len(self.regions)
-        states = [0]*len(self.system.particle)
-        for j,p in enumerate(self.system.particle):
+        states = [0]*len(self.system.particles)
+        for j,p in enumerate(self.system.particles):
             for i,r in enumerate(self.regions):
                 if IsInPoly(p.position, r):
                     region_counts[i] += 1
@@ -234,7 +273,7 @@ class ParticleSim(ParticlePhysics):
                 self.log_data(i, region_counts)
 
             region_counts = [0]*len(self.regions)
-            for j,p in enumerate(self.system.particle):
+            for j,p in enumerate(self.system.particles):
                 for i,r in enumerate(self.regions):
                     if IsInPoly(p.position, r):
                         region_counts[i] += 1
@@ -251,7 +290,7 @@ class ParticleSim(ParticlePhysics):
 
 
     def log_data(self, step, r_counts, wires = []):
-        xys = [(copy(p.species), copy(p.position)) for p in self.system.particle]
+        xys = [(copy(p.species), copy(p.position)) for p in self.system.particles]
         envs = [[v for (i,v) in c] for c in deepcopy(self.env.vertex_list_per_poly)]
         rs = copy(r_counts)
         wires = deepcopy(wires)

@@ -141,14 +141,14 @@ if __name__ == '__main__':
     for i in range(N):
         vel = normalize(np.array([random()-0.5, random()-0.5]))
         if random() < FRAC_BALLISTIC:
-            system.particle.append(Particle(position=start_pts[i],
+            system.particles.append(Particle(position=start_pts[i],
                                             velocity=list(vel),
                                             radius = R,
                                             species= 'B-free',
                                             mass = 100.0))
 
         else:
-            system.particle.append(Particle(position=start_pts[i],
+            system.particles.append(Particle(position=start_pts[i],
                                             velocity=list(vel),
                                             radius = R,
                                             species= 'A-free',
