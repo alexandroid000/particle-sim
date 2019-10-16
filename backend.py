@@ -10,8 +10,8 @@ sys.path.insert(0, "./bounce-viz/src/")
 from helper.shoot_ray_helper import IsInPoly, ClosestPtAlongRay # pylint: disable=unused-import
 from helper.geometry_helper import AngleBetween # pylint: disable=unused-import
 from utilities import *
+from configuration import properties
 
-###IDEA: Mass--> different types of collision ( in run function), different scatter
 # Simulation Backend
 # ------------------
 
@@ -23,12 +23,11 @@ class Particle():
         self.radius = radius
         self.species = species
         self.mass = mass
-### Q. why position and velocity are not set equal to "None"? Design choice? 
-## self is a convention to write 
-## Mass should be defined in Species of Particles 
-class System(): #list of particles
+
+class System():
 
     def __init__(self):
+        #list of particles
         self.particles = []
 
 class ParticlePhysics(object):
@@ -47,7 +46,8 @@ class ParticlePhysics(object):
         self.sticky = sticky
         self.wires = wires
 
-    def neighbors(self, particle): #distinguishes if particles are neighboring each other 
+    # check for other particles inside bounding box
+    def neighbors(self, particle):
         [x,y] = particle.position
         neighbors = []
         bounding_box = Simple_Polygon("bb",np.array([[x-self.R,y-self.R]

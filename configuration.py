@@ -29,7 +29,7 @@ FRAC_BALLISTIC: float
 """
 
 L = 1.0
-N = 300
+N = 20
 T = 100
 R = 0.05*L
 BR = 0.005
