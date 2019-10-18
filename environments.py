@@ -1,10 +1,14 @@
 from maps import *
 from simple_polygon import Simple_Polygon
+from utilities import mk_regpoly, mk_obstacle, mk_spiky_circle, mk_spiky_obstacle
 
 # some simple environments for experiments
  
 def square(L):
     return Simple_Polygon("square",np.array([[0.0,0.0], [L, 0.0],[L,L],[0.0,L]]))
+
+def octagon(L):
+    return Simple_Polygon("octagon",np.array(mk_regpoly(8, L)))
 
 def spikes(L):
     return Simple_Polygon("spikes",np.array(mk_spiky_circle(8, 0.5*L)))
