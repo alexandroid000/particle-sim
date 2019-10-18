@@ -79,24 +79,26 @@ class ParticlePhysics(object):
         self.env = new_env
 
     def obstacle_interaction(self, particle, edge_dir):
-        [ex,ey] = edge_dir
+        [ex,ey] = normalize(edge_dir)
         d, c, j = closest_edge(particle.position, self.env)
 
         if particle.species[0] == 'A':
             dr = self.next_dr(particle) #picks new direction
-            proj_dr_onto_edge = (dr.dot(edge_dir))/np.linalg.norm(edge_dir)
-            particle.position += proj_dr_onto_edge
+            proj_dr_onto_edge = ((dr.dot(edge_dir))/np.linalg.norm(edge_dir))*normalize(edge_dir)
+
+            # do not allow escape!!
+            if IsInPoly(particle.position + proj_dr_onto_edge, self.env):
+                particle.position += proj_dr_onto_edge
 
             # only called if a moveable obstacle (component c != 0)
             if c != 0:
-                push_dir = normalize(np.array([ey, -ex])) # pointing into obstacle
-                proj_dr_onto_normal = (dr.dot(push_dir))/np.linalg.norm(push_dir)
+                push_dir = np.array([ey, -ex]) # pointing into obstacle
+                proj_dr_onto_normal = push_dir*(dr.dot(push_dir))/np.linalg.norm(push_dir)
                 self.move_obstacle(c, proj_dr_onto_normal)
         else: 
             normal = normalize(np.array([-ey, ex])) # pointing into polygon
             th_out = -(np.pi/2. - 0.2)
             particle.velocity = normalize(rotate_vector(normal, th_out))
-
 
     # how the particles should leave the static obstacles
     def scatter(self, particle, edge_dir):
