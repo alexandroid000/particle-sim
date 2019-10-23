@@ -146,8 +146,7 @@ class ParticlePhysics(object):
 class ParticleSim(ParticlePhysics):
 
     def __init__(self, system, database, env, delta=0.02,
-                       br = 0.01, k = 1.0, sticky = True, r = 0.01, 
-                       regions = [], policy = []):
+                       br = 0.01, k = 1.0, sticky = True, r = 0.01):
 
         ParticlePhysics.__init__(self, system, env, delta, br, k, sticky, r)
 
@@ -160,8 +159,6 @@ class ParticleSim(ParticlePhysics):
         self.br = br
         self.K = k
         self.sticky = sticky
-        self.regions = regions
-        self.policy = policy
 
 
     def particle_collide(self, p): 
@@ -183,36 +180,16 @@ class ParticleSim(ParticlePhysics):
     def run(self, steps):
         print("Running Simulation for",steps,"steps")
 
-        # initialize region counts
-        region_counts = [0]*len(self.regions)
-        states = [0]*len(self.system.particle)
-        for j,p in enumerate(self.system.particle):
-            for i,r in enumerate(self.regions):
-                if IsInPoly(p.position, r):
-                    region_counts[i] += 1
-                    states[j] = i
 
         # run sim for T steps
-        ##board pic 
         for i in range(steps):
 
             if i % 10 == 0:
                 print("Step",i)
 
-            # log regions; only works at beginning of loop for some reason
-            joint_state = encodeJointState(states)
-            if self.policy != []:
-                new_orientations = decode_policy(self.policy[joint_state])
-                self.log_data(i, region_counts, new_orientations)
-            else:
-                self.log_data(i, region_counts)
+            self.log_data(i)
 
-            region_counts = [0]*len(self.regions)
             for j,p in enumerate(self.system.particle):
-                for i,r in enumerate(self.regions):
-                    if IsInPoly(p.position, r):
-                        region_counts[i] += 1
-                        states[j] = i
 
                 # detect particle-particle collisions
                 self.particle_collide(p)
@@ -224,11 +201,9 @@ class ParticleSim(ParticlePhysics):
                     self.take_step(p)
 
 
-    def log_data(self, step, r_counts):
+    def log_data(self, step):
         xys = [(copy(p.species), copy(p.position)) for p in self.system.particle]
         envs = [[v for (i,v) in c] for c in deepcopy(self.env.vertex_list_per_poly)]
-        rs = copy(r_counts)
         self.db["pos"][step] = xys
         self.db["env"][step] = envs
-        self.db["counts"][step] = rs
 

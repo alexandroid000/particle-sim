@@ -59,14 +59,6 @@ def write_data(database, simname):
 
     print("wrote data to",simname+".xyz")
 
-#    # write region count data to file
-#    with open(simname+'_regions.csv','w') as th:
-#        wr = csv.writer(th, quoting=csv.QUOTE_ALL)
-#        rs = database["counts"][-1]
-#        wr.writerow(rs)
-#
-#    print("wrote data to",simname+"_regions.csv")
-
 
 
 def init():
