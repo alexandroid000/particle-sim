@@ -30,7 +30,6 @@ class Data:
     def __init__(self, db, start=0):
         self.xy = db["pos"]
         self.env = db["env"]
-        self.wires = db["wires"]
         self.num = start
 
     def __iter__(self):
@@ -44,9 +43,8 @@ class Data:
     def __next__(self):
         dat = self.xy[self.num]
         polys = [np.array(poly) for poly in self.env[self.num]]
-        wires = self.wires[self.num]
         self.num += 1
-        return self.clean_system(dat), polys, wires
+        return self.clean_system(dat), polys
 
 
 def write_data(database, simname):
@@ -61,36 +59,31 @@ def write_data(database, simname):
 
     print("wrote data to",simname+".xyz")
 
-    # write region count data to file
-    with open(simname+'_regions.csv','w') as th:
-        wr = csv.writer(th, quoting=csv.QUOTE_ALL)
-        rs = database["counts"][-1]
-        wr.writerow(rs)
-
-    print("wrote data to",simname+"_regions.csv")
+#    # write region count data to file
+#    with open(simname+'_regions.csv','w') as th:
+#        wr = csv.writer(th, quoting=csv.QUOTE_ALL)
+#        rs = database["counts"][-1]
+#        wr.writerow(rs)
+#
+#    print("wrote data to",simname+"_regions.csv")
 
 
 
 def init():
     """initialize animation"""
-    global scat, patches, w_patches
+    global scat, patches
     patches = []
-    w_patches = []
 
     for poly in initenv:
         p = Polygon(poly, ec='k', lw=2, fc='none')
         patches.append(ax.add_patch(p))
 
-    for w in initwires:
-        pos = w.xy
-        c = Circle(pos, 0.1, facecolor='r')
-        w_patches.append(ax.add_patch(c))
-    return w_patches+patches+[scat]
+    return patches+[scat]
 
 def animate(i):
     """perform animation step"""
-    global scat, patches, w_patches
-    xy, polys, ws = next(d)
+    global scat, patches
+    xy, polys = next(d)
 
     for j in range(1,len(patches)):
         patches[j].set_xy(polys[j])
@@ -100,7 +93,7 @@ def animate(i):
     scat.set_facecolors([color_map[t] for t in xy[0]])
     scat.set_sizes([size_map[t] for t in xy[0]])
     scat.set_offsets(xy[1])
-    return w_patches+patches+[scat]
+    return patches+[scat]
 
 def mkAnimation():
     ani = animation.FuncAnimation(fig, animate, frames=T-2, interval=10,
@@ -129,7 +122,7 @@ if __name__ == '__main__':
 
     # initialize simulation
     system = System()
-    data = {"pos":[[]]*T, "env":[[]]*T, "counts":[[]]*(T-1), "wires":[[]]*T}
+    data = {"pos":[[]]*T, "env":[[]]*T, "counts":[[]]*(T-1)}
     simulation = ParticleSim(system, data, env,
                              br = BR, k = K, sticky=ATTACH,
                              r = R)
@@ -162,7 +155,7 @@ if __name__ == '__main__':
     if ANIMATE:
         # make iterator to make animation easier
         d = Data(simulation.db)
-        initxy, initenv, initwires = copy(next(d))
+        initxy, initenv = copy(next(d))
 
         colors = [color_map[t] for t in initxy[0]]
         sizes = [size_map[t] for t in initxy[0]]

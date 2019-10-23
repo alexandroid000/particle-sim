@@ -35,7 +35,7 @@ class ParticlePhysics(object):
 
     def __init__(self, system, env, delta=0.05,
                        br = 0.01, k = 1.0, sticky = True,
-                       r = 0.01, wires = []):
+                       r = 0.01):
         self.system = system
         self.env = env
         self.delta = delta
@@ -45,7 +45,6 @@ class ParticlePhysics(object):
         self.R = r
         self.K = k
         self.sticky = sticky
-        self.wires = wires
 
     def neighbors(self, particle): #distinguishes if particles are neighboring each other 
         [x,y] = particle.position
@@ -100,18 +99,6 @@ class ParticlePhysics(object):
             th_out = -(np.pi/2. - 0.2)
             particle.velocity = normalize(rotate_vector(normal, th_out))
 
-    # how the particles should leave the static obstacles
-    def scatter(self, particle, edge_dir):
-        particle.species = particle.species[0]+'-free'
-        [ex,ey] = edge_dir
-        normal = normalize(np.array([-ey, ex])) # pointing into polygon
-
-        if particle.species[0] == 'A':
-            # rotate particle's velocity uniformly out from wall
-            th_out = np.pi*random() - np.pi/2
-        else:
-            th_out = -(np.pi/2. - 0.2)
-        particle.velocity = normalize(rotate_vector(normal, th_out))
 
     # TODO: order of collisions is arbitrary if more than one neighbor in
     # bounding box. Is there a more principled way to do this?
@@ -128,17 +115,6 @@ class ParticlePhysics(object):
         else: #prevents particles going outside of polygon 
             particle.position = self.project_to_border_region(particle.position)
             d, edge_dir = dist_dir_closest_edge(particle.position, self.env)
-            self.obstacle_interaction(particle, edge_dir)
-
-    def take_step_boundary(self, particle):
-        d, edge_dir = dist_dir_closest_edge(particle.position, self.env)
-
-        # escape from wall
-        if random() > properties[particle.species]['wall_prob']:
-            self.scatter(particle, edge_dir)
-
-        # stay on wall, impart force
-        else:
             self.obstacle_interaction(particle, edge_dir)
 
     def next_dr(self, particle): #Next direction 
@@ -158,8 +134,6 @@ class ParticlePhysics(object):
 
         # update velocity for next step
         beta = properties[particle.species]['beta']
-        if self.wires != []: 
-            particle.velocity = force_from_wires(self.wires, particle.position)
         particle.velocity[0] += beta*np.cos(xi_theta)
         particle.velocity[1] += beta*np.sin(xi_theta)
         particle.velocity = normalize(particle.velocity)
@@ -172,10 +146,10 @@ class ParticlePhysics(object):
 class ParticleSim(ParticlePhysics):
 
     def __init__(self, system, database, env, delta=0.02,
-                       br = 0.01, k = 1.0, sticky = True, r = 0.01, wires = [],
+                       br = 0.01, k = 1.0, sticky = True, r = 0.01, 
                        regions = [], policy = []):
 
-        ParticlePhysics.__init__(self, system, env, delta, br, k, sticky, r, wires)
+        ParticlePhysics.__init__(self, system, env, delta, br, k, sticky, r)
 
         self.system = system #list of particle
         self.db = database
@@ -186,7 +160,6 @@ class ParticleSim(ParticlePhysics):
         self.br = br
         self.K = k
         self.sticky = sticky
-        self.wires = wires
         self.regions = regions
         self.policy = policy
 
@@ -231,7 +204,6 @@ class ParticleSim(ParticlePhysics):
             if self.policy != []:
                 new_orientations = decode_policy(self.policy[joint_state])
                 self.log_data(i, region_counts, new_orientations)
-                self.wires = [Wire(v, o) for v, o in zip(wire_verts, new_orientations)]
             else:
                 self.log_data(i, region_counts)
 
@@ -252,13 +224,11 @@ class ParticleSim(ParticlePhysics):
                     self.take_step(p)
 
 
-    def log_data(self, step, r_counts, wires = []):
+    def log_data(self, step, r_counts):
         xys = [(copy(p.species), copy(p.position)) for p in self.system.particle]
         envs = [[v for (i,v) in c] for c in deepcopy(self.env.vertex_list_per_poly)]
         rs = copy(r_counts)
-        wires = deepcopy(wires)
         self.db["pos"][step] = xys
         self.db["env"][step] = envs
         self.db["counts"][step] = rs
-        self.db["wires"][step] = wires
 
