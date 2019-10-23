@@ -202,8 +202,10 @@ class ParticleSim(ParticlePhysics):
 
 
     def log_data(self, step):
-        xys = [(copy(p.species), copy(p.position)) for p in self.system.particle]
+        xys_a = [(copy(p.species), copy(p.position)) for p in self.system.particle if p.species[0] == 'A']
+        xys_b = [(copy(p.species), copy(p.position)) for p in self.system.particle if p.species[0] == 'B']
         envs = [[v for (i,v) in c] for c in deepcopy(self.env.vertex_list_per_poly)]
-        self.db["pos"][step] = xys
+        self.db["pos_a"][step] = xys_a
+        self.db["pos_b"][step] = xys_b
         self.db["env"][step] = envs
 

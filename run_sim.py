@@ -1,4 +1,5 @@
 import csv
+from random import random
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon, Circle
@@ -6,8 +7,8 @@ import matplotlib.animation as animation
 
 from backend import *
 from configuration import *
+from analyze_density import get_limit_cycle_poly
 from utilities import normalize, uniform_sample_along_circle, uniform_sample_from_poly
-from random import random
 
 # Animation display parameters
 # ----------------------------
@@ -59,8 +60,6 @@ def write_data(database, simname):
 
     print("wrote data to",simname+".xyz")
 
-
-
 def init():
     """initialize animation"""
     global scat, patches
@@ -70,7 +69,11 @@ def init():
         p = Polygon(poly, ec='k', lw=2, fc='none')
         patches.append(ax.add_patch(p))
 
-    return patches+[scat]
+    cycle = get_limit_cycle_poly(8, 1., 1, 0.2)
+    c = Polygon(cycle, ec='r', lw=1, fc='none', ls='--')
+    cpatch = [ax.add_patch(c)]
+
+    return patches+cpatch+[scat]
 
 def animate(i):
     """perform animation step"""
@@ -114,11 +117,11 @@ if __name__ == '__main__':
 
     # initialize simulation
     system = System()
-    data = {"pos":[[]]*T, "env":[[]]*T, "counts":[[]]*(T-1)}
+    data = {"pos_a":[[]]*T, "pos_b":[[]]*T, "env":[[]]*T}
     simulation = ParticleSim(system, data, env,
                              br = BR, k = K, sticky=ATTACH,
                              r = R)
-    simname = env.name+"_N"+str(N)+"_T"+str(T)+"_R"+str(start)+"_A"+str(action)
+    simname = env.name+"_N"+str(N)+"_T"+str(T)+"_F"+str(FRAC_BALLISTIC)
 
     # create N particles at random locations in the polygon
     start_pts = uniform_sample_from_poly(env, N)
@@ -162,9 +165,6 @@ if __name__ == '__main__':
                         , facecolors = colors
                         , s = sizes
                         )
-
-
-
 
         print("writing video to",simname+".mp4")
         mkAnimation()
