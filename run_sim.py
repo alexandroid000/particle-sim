@@ -51,14 +51,16 @@ class Data:
 def write_data(database, simname):
         
     # write position data to file
-    with open(simname+'.xyz','w') as th:
+    # only log type A particles
+    with open(simname+'_typeA.xyz','w') as th:
         for i in range(T):
             xys = database["pos"][i]
-            for (_, [x,y]) in xys:
-                th.write(str(x)+" "+str(y)+" ")
+            for (t, [x,y]) in xys:
+                if t[0] == 'A':
+                    th.write(str(x)+" "+str(y)+" ")
             th.write("\n")
 
-    print("wrote data to",simname+".xyz")
+    print("wrote data to",simname+"_typeA.xyz")
 
 def init():
     """initialize animation"""
@@ -117,7 +119,7 @@ if __name__ == '__main__':
 
     # initialize simulation
     system = System()
-    data = {"pos_a":[[]]*T, "pos_b":[[]]*T, "env":[[]]*T}
+    data = {"pos":[[]]*T, "env":[[]]*T}
     simulation = ParticleSim(system, data, env,
                              br = BR, k = K, sticky=ATTACH,
                              r = R)
