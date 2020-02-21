@@ -30,6 +30,35 @@ class System():
         #list of particles
         self.particles = []
 
+class discretizedEnvironment():
+    def __init__(self, env, R):
+        self.quadrants = {}
+        xs = [x for (x,y) in env.complete_vertex_list]
+        ys = [y for (x,y) in env.complete_vertex_list]
+        XMIN = np.amin(xs)
+        XMAX = np.amax(xs)
+        YMIN = np.amin(ys)
+        YMAX = np.amax(ys)
+        N_x = int(np.ceil(abs(XMAX-XMIN)/R))
+        N_y = int(np.ceil(abs(YMAX-YMIN)/R))
+        self.quadrants = {i:{j:[] for j in range(N_y)} for i in range(N_x)}
+
+
+    def init_quadrants(self, particles):
+        for p in particles:
+            (x_coord, y_coord) = self.quadrant(p.x, p.y)
+            self.quadrants[x_coord][y_coord].append(p)
+
+    def particles_in_quadrant(self, x_coord, y_coord):
+        return self.quadrants[x_coord][y_coord]
+
+
+    def quadrant(self,x,y):
+        r_num_x = x // R
+        r_num_y = y // R
+        return (r_num_x, r_num_y)
+
+
 class ParticlePhysics(object):
 
     def __init__(self, system, env, delta=0.05,
@@ -44,9 +73,10 @@ class ParticlePhysics(object):
         self.R = r
         self.K = k
         self.sticky = sticky
-        self.wires = wires
+        self.disc = discretizedEnvironment(r)
 
-    # check for other particles inside bounding box
+
+    # finds all neighbors of "particle" in the +-R bounding box
     def neighbors(self, particle):
         [x,y] = particle.position
         neighbors = []

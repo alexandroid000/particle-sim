@@ -1,3 +1,5 @@
+This is a simulator for a collection of active Brownian particles.
+
 #### Dependencies and Installation
 
 - Python3 
@@ -28,9 +30,8 @@ To execute a simulation, run
 python run_sim.py
 ```
 
-This should write three files, a trajectory log ending in `.xyz`, a log of how
-many particles were in each region ending in `.csv`, and a video of the
-simulation, ending in `.mp4`.
+This should write three files, a trajectory log ending in `.xyz` 
+and a video of the simulation, ending in `.mp4`.
 
 ### Changing Parameters
 

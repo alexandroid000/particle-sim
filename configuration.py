@@ -29,7 +29,7 @@ FRAC_BALLISTIC: float
 """
 
 L = 1.0
-N = 20
+N = 10
 T = 100
 R = 0.05*L
 BR = 0.005
@@ -54,6 +54,18 @@ XMIN = np.amin(xs)
 XMAX = np.amax(xs)
 YMIN = np.amin(ys)
 YMAX = np.amax(ys)
+
+L_actual = max((XMAX-XMIN), (YMAX-YMIN))
+R = L_actual / 10
+
+class discretizedEnvironment():
+    def __init__(self, env, R):
+        self.env = env
+
+    def quadrant(x,y):
+        r_num_x = x // R
+        r_num_y = y // R
+        return (r_num_x, r_num_y)
 
 
 

@@ -3,6 +3,7 @@
 import unittest
 from backend import *
 from utilities import *
+from maps import *
 from environments import *
 from random import randint, random
 import numpy as np
@@ -14,48 +15,21 @@ class TestExamples(unittest.TestCase):
     def setUp(self):
         return
 
-    def test_grid(self):
-        system = System()
-        L = 1.0
-        T = 10
-        N = 4
-        R = 0.25
-        BR = 0.005
-        K = 0.5
-        ATTACH = False
-        data = {"pos":[[]]*T, "env":[[]]*T, "counts":[[]]*(T-1), "wires":[[]]*T}
-        env = square(L)
+    def test_discretize(self):
+        env = Simple_Polygon("th", two_holes[0])
+        d = discretizedEnvironment(env, 1)
+        N_x = len(d.quadrants)
+        N_y = len(d.quadrants[0])
+        self.assertEqual(N_x, 12)
+        self.assertEqual(N_y, 8)
 
-        start_pts = [np.array([0.25, 0.25]),
-                     np.array([0.25, 0.75]),
-                     np.array([0.75, 0.25]),
-                     np.array([0.75, 0.75])]
+        particle_pos = []
 
-        for i in range(N):
-            vel = normalize(np.array([random()-0.5, random()-0.5]))
             system.particles.append(Particle(position=start_pts[i],
                                             velocity=list(vel),
                                             radius = R,
-                                            species= 'A-free',
+                                            species= 'B-free',
                                             mass = 100.0))
-
-        simulation = ParticleSim(system, data, env,
-                                 br = BR, k = K, sticky=ATTACH,
-                                 r = R)
-
-        Ncells = 0
-        for f in list(simulation.cells.items()):
-            print(f)
-        for x,ys in simulation.cells.items():
-            for y,c in ys.items():
-                Ncells += 1
-
-        self.assertEqual(Ncells, 4)
-
-        np.testing.assert_almost_equal(simulation.cells[0][0].position, start_pts[0], decimal=7, verbose=True)
-        np.testing.assert_almost_equal(simulation.cells[0][1].position, start_pts[1], decimal=7, verbose=True)
-        np.testing.assert_almost_equal(simulation.cells[1][0].position, start_pts[2], decimal=7, verbose=True)
-        np.testing.assert_almost_equal(simulation.cells[1][1].position, start_pts[3], decimal=7, verbose=True)
 
 
     def test_scatter(self):
