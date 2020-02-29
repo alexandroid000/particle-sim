@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 import csv
 from random import random
 
@@ -105,16 +107,24 @@ def mkAnimation():
 
 if __name__ == '__main__':
 
+    # TODO: use a typed arguments library here with default values etc
     args = sys.argv[1:]
     if len(args) == 0:
-        start = 0
-        action = 0
+        FRAC_BALLISTIC = 0.1
+        N = 300
+        T = 400
     elif len(args) == 1:
-        start = int(args[0])
-        action = 0
+        FRAC_BALLISTIC = float(args[0])*0.1
+        N = 300
+        T = 10
+    elif len(args) == 2:
+        FRAC_BALLISTIC = float(args[0])
+        N = float(args[1])
+        T = 400
     else:
-        start = int(args[0])
-        action = int(args[1])
+        FRAC_BALLISTIC = float(args[0])
+        N = float(args[1])
+        T = float(args[2])
 
 
     # initialize simulation
