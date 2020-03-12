@@ -116,7 +116,7 @@ if __name__ == '__main__':
     elif len(args) == 1:
         FRAC_BALLISTIC = float(args[0])*0.1
         N = 300
-        T = 10
+        T = 400
     elif len(args) == 2:
         FRAC_BALLISTIC = float(args[0])
         N = float(args[1])
@@ -133,7 +133,7 @@ if __name__ == '__main__':
     simulation = ParticleSim(system, data, env,
                              br = BR, k = K, sticky=ATTACH,
                              r = R)
-    simname = env.name+"_N"+str(N)+"_T"+str(T)+"_F"+str(FRAC_BALLISTIC)
+    simname = env.name+"_N"+str(N)+"_T"+str(T)+"_F"+str(round(FRAC_BALLISTIC,2))
 
     # create N particles at random locations in the polygon
     start_pts = uniform_sample_from_poly(env, N)
@@ -180,5 +180,6 @@ if __name__ == '__main__':
 
         print("writing video to",simname+".mp4")
         mkAnimation()
+        print("Finished writing all data!")
 
 
