@@ -9,8 +9,7 @@ import matplotlib.animation as animation
 
 from backend import *
 from configuration import *
-from analyze_density import get_limit_cycle_poly
-from utilities import normalize, uniform_sample_along_circle, uniform_sample_from_poly
+from utilities import normalize, uniform_sample_along_circle, uniform_sample_from_poly, get_limit_cycle_poly
 
 # Animation display parameters
 # ----------------------------
@@ -119,12 +118,12 @@ if __name__ == '__main__':
         T = 400
     elif len(args) == 2:
         FRAC_BALLISTIC = float(args[0])
-        N = float(args[1])
+        N = int(args[1])
         T = 400
     else:
         FRAC_BALLISTIC = float(args[0])
-        N = float(args[1])
-        T = float(args[2])
+        N = int(args[1])
+        T = int(args[2])
 
 
     # initialize simulation

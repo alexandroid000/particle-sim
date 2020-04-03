@@ -173,6 +173,35 @@ def uniform_sample_along_circle(poly, n, r):
         samples[i] = sample
     return samples
 
+# n: number of sides of regular polygon
+# l: side length
+# m: bounce trajectory hits every mth edge
+# TODO: add feasibility check for theta and clockwise functionality
+def regpoly_fp(n, r, m, th):
+    theta = np.pi/2 - th
+    c = np.cos(theta)/np.cos(theta - np.pi*(n-2*m)/n)
+    l = 2*r*np.sin(np.pi/n)
+    Anum = l*np.sin(np.pi*(m+1)/n)*np.sin(m*np.pi/n)
+    Aden = np.sin(np.pi/n)*np.sin(np.pi*(n-2*m)/n)
+    A = Anum/Aden
+    xfp = (l - A*(1-c))/(1+c)
+    return xfp
+
+# returns polygon formed by collision points of limit cycle
+# in regular polygon with n edges
+# edge length l
+# trajectory hits every mth edge of polygon
+def get_limit_cycle_poly(n, r, m, th):
+    poly_verts = mk_regpoly(n, r)
+    edges = zip(poly_verts, (poly_verts[1:]+poly_verts[0]))
+    xfp = regpoly_fp(n,r,m,th)
+    cycle_points = []
+    for p1, p2 in edges:
+        v = normalize(np.array(p2) - np.array(p1))
+        pt = np.array(p1) + v*xfp
+        cycle_points.append(pt)
+    return cycle_points
+
 
 
 # Magnetic flow field generation
