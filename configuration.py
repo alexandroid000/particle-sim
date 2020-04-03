@@ -29,14 +29,17 @@ FRAC_BALLISTIC: float
 """
 
 L = 1.0
-N = 10
-T = 100
 R = 0.05*L
 BR = 0.005
 K = 0.5
 ATTACH = False
 ANIMATE = True
-FRAC_BALLISTIC = 0.2
+
+# following are set via command line or defaults now
+
+#N = 30
+#T = 100
+#FRAC_BALLISTIC = 0.2
 
 """env defines the environment
 
@@ -45,7 +48,7 @@ Simple_Polygon from bounce-viz/src/simple_polygon.py
 
 see environments.py and bounce-viz/src/maps.py for more examples"""
 #env = Simple_Polygon("smallpoly1",smallpoly1[0])
-env = square(L)
+env = octagon(L)
 
 """bounds of animation window"""
 xs = [x for (x,y) in env.complete_vertex_list]
@@ -75,15 +78,11 @@ class discretizedEnvironment():
 ## play around with numbers below 
 
 # type A particles:
-    # faster
-    # smaller rotational drift (beta)
-    # escape from walls more quickly (wall_prob, probability of staying stuck on wall)
+    # active brownian particles
 A_properties = {'vel':1., 'wall_prob': 0.05, 'beta': 0.2}
 
 # type B particles:
-    # slower
-    # more rotational drift
-    # get stuck on walls more
+    # bouncing robots 
 B_properties = {'vel':200., 'wall_prob': 0.05, 'beta': 0.0}
 
 properties = { 'A-free':A_properties
