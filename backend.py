@@ -23,9 +23,7 @@ class Particle():
         self.radius = radius
         self.species = species
         self.mass = mass
-### Q. why position and velocity are not set equal to "None"? Design choice? 
-## self is a convention to write 
-## Mass should be defined in Species of Particles 
+
 class System(): #list of particles
 
     def __init__(self):

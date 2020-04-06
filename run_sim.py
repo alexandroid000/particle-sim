@@ -139,19 +139,18 @@ if __name__ == '__main__':
     #start_pts = uniform_sample_along_circle(env, N, 2.0)
     for i in range(N):
         vel = normalize(np.array([random()-0.5, random()-0.5]))
+        species='A-free'
+        mass=1.0
         if random() < FRAC_BALLISTIC:
-            system.particles.append(Particle(position=start_pts[i],
-                                            velocity=list(vel),
-                                            radius = R,
-                                            species= 'B-free',
-                                            mass = 100.0))
+            species='B-free'
+            mass=100.0
 
-        else:
-            system.particles.append(Particle(position=start_pts[i],
-                                            velocity=list(vel),
-                                            radius = R,
-                                            species= 'A-free',
-                                            mass = 1.0))
+        system.particles.append(Particle(position=start_pts[i],
+                                        velocity=list(vel),
+                                        radius = R,
+                                        species= species,
+                                        mass = mass))
+
     # run simulation for T steps
     simulation.run(T-1)
     print("Finished Simulation, Writing Data...")
