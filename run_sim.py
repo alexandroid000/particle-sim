@@ -9,7 +9,7 @@ import matplotlib.animation as animation
 
 from backend import *
 from configuration import *
-from utilities import normalize, uniform_sample_along_circle, uniform_sample_from_poly, get_limit_cycle_poly
+from utilities import normalize, uniform_sample_along_circle, uniform_sample_from_poly, get_limit_cycle_poly, discretizedEnvironment
 
 # Animation display parameters
 # ----------------------------
@@ -129,7 +129,8 @@ if __name__ == '__main__':
     # initialize simulation
     system = System()
     data = {"pos":[[]]*T, "env":[[]]*T}
-    simulation = ParticleSim(system, data, env,
+    d_env = discretizedEnvironment(env)
+    simulation = ParticleSim(system, data, env, d_env,
                              br = BR, k = K, sticky=ATTACH,
                              r = R)
     simname = env.name+"_N"+str(N)+"_T"+str(T)+"_F"+str(round(FRAC_BALLISTIC,2))
@@ -150,6 +151,8 @@ if __name__ == '__main__':
                                         radius = R,
                                         species= species,
                                         mass = mass))
+
+        simulation.d_env.insert_particle(i, start_pts[i][0], start_pts[i][1])
 
     # run simulation for T steps
     simulation.run(T-1)

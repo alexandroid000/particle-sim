@@ -16,20 +16,27 @@ class TestExamples(unittest.TestCase):
         return
 
     def test_discretize(self):
-        env = Simple_Polygon("th", two_holes[0])
-        d = discretizedEnvironment(env, 1)
-        N_x = len(d.quadrants)
-        N_y = len(d.quadrants[0])
+
+        rect = np.array([(0., 0.), (12., 0.), (12., 8.), (0., 8.)])
+
+        env = Simple_Polygon("r", rect)
+        d = discretizedEnvironment(env, N=12)
+        N_x = len(d.cells)
+        N_y = len(d.cells[0])
         self.assertEqual(N_x, 12)
         self.assertEqual(N_y, 8)
 
         particle_pos = []
 
-            system.particles.append(Particle(position=start_pts[i],
-                                            velocity=list(vel),
-                                            radius = R,
-                                            species= 'B-free',
-                                            mass = 100.0))
+        p1 = (0.5,0.5)
+        p2 = (-1.,-1.)
+        p3 = (13., 13.)
+        p4 = (5.5, 5.5)
+
+        self.assertEqual(d.quadrant(*p1), (0,0))
+        self.assertRaises(ValueError, d.quadrant, *p2)
+        self.assertRaises(ValueError, d.quadrant, *p3)
+        self.assertEqual(d.quadrant(*p4), (5,5))
 
 
     def test_scatter(self):

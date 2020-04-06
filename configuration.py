@@ -58,18 +58,7 @@ XMAX = np.amax(xs)
 YMIN = np.amin(ys)
 YMAX = np.amax(ys)
 
-L_actual = max((XMAX-XMIN), (YMAX-YMIN))
-R = L_actual / 10
-
-class discretizedEnvironment():
-    def __init__(self, env, R):
-        self.env = env
-
-    def quadrant(x,y):
-        r_num_x = x // R
-        r_num_y = y // R
-        return (r_num_x, r_num_y)
-
+L_actual = max(abs(XMAX-XMIN), abs(YMAX-YMIN))
 
 
 # Particle Configuration

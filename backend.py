@@ -27,7 +27,7 @@ class Particle():
 class System(): #list of particles
 
     def __init__(self):
-        self.particle = []
+        self.particles = []
 
 class ParticlePhysics(object):
 
@@ -51,7 +51,7 @@ class ParticlePhysics(object):
                                                    , [x+self.R,y-self.R]
                                                    , [x+self.R,y+self.R]
                                                    , [x-self.R,y+self.R]]))
-        for p in self.system.particle:
+        for p in self.system.particles:
             if IsInPoly(p.position, bounding_box) and (p is not particle): # does not count current particle as its own neighbor 
                 neighbors.append(p)                                        # confusing variable names
         return neighbors
@@ -143,7 +143,7 @@ class ParticlePhysics(object):
 
 class ParticleSim(ParticlePhysics):
 
-    def __init__(self, system, database, env, delta=0.02,
+    def __init__(self, system, database, env, d_env, delta=0.02,
                        br = 0.01, k = 1.0, sticky = True, r = 0.01):
 
         ParticlePhysics.__init__(self, system, env, delta, br, k, sticky, r)
@@ -157,6 +157,7 @@ class ParticleSim(ParticlePhysics):
         self.br = br
         self.K = k
         self.sticky = sticky
+        self.d_env = d_env
 
 
     def particle_collide(self, p): 
@@ -169,7 +170,7 @@ class ParticleSim(ParticlePhysics):
             # each particle is an object, when colliding all but one get removed
             # TODO: update mass of the mega-particle
             for n in ns:
-                self.system.particle.remove(n)
+                self.system.particles.remove(n)
         else:
             if ns != []:
                 self.group_collision(p, ns)
@@ -187,7 +188,7 @@ class ParticleSim(ParticlePhysics):
 
             self.log_data(i)
 
-            for j,p in enumerate(self.system.particle):
+            for j,p in enumerate(self.system.particles):
 
                 # detect particle-particle collisions
                 self.particle_collide(p)
@@ -200,7 +201,7 @@ class ParticleSim(ParticlePhysics):
 
 
     def log_data(self, step):
-        xys = [(copy(p.species), copy(p.position)) for p in self.system.particle]
+        xys = [(copy(p.species), copy(p.position)) for p in self.system.particles]
         envs = [[v for (i,v) in c] for c in deepcopy(self.env.vertex_list_per_poly)]
         self.db["pos"][step] = xys
         self.db["env"][step] = envs

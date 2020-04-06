@@ -101,6 +101,38 @@ def softRepulse(particle1, particle2, K):
     particle2.velocity += f2/m2
 
 
+class discretizedEnvironment():
+    def __init__(self, env, N):
+        self.env = env
+        self.N = N # number of cells along longest axis
+        xs = [x for (x,y) in env.complete_vertex_list]
+        ys = [y for (x,y) in env.complete_vertex_list]
+        self.XMIN = np.amin(xs)
+        self.XMAX = np.amax(xs)
+        self.YMIN = np.amin(ys)
+        self.YMAX = np.amax(ys)
+
+        L_actual = max(abs(self.XMAX-self.XMIN), abs(self.YMAX-self.YMIN))
+        self.R = L_actual / self.N
+        xnum = int(np.ceil(abs(self.XMAX-self.XMIN)/self.R))
+        ynum = int(np.ceil(abs(self.YMAX-self.YMIN)/self.R))
+        self.cells = {i:{j:[] for j in range(ynum)} for i in range(xnum)}
+
+    def insert_particle(self, id, x, y):
+        (i,j) = self.quadrant(x,y)
+        self.cells[i][j].append(id)
+
+    def remove_particle(self, id, i, j):
+        self.cells[i][j].remove(id)
+
+    def quadrant(self, x,y):
+        if x > self.XMAX or x < self.XMIN or y > self.YMAX or y < self.YMIN:
+            raise ValueError("Particle has escaped the polygon...")
+        r_num_x = abs(x-self.XMIN) // self.R
+        r_num_y = abs(y-self.YMIN) // self.R
+        return (r_num_x, r_num_y)
+
+
 # Environment Utilities
 # -----------------
 
