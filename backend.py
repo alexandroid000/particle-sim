@@ -51,7 +51,12 @@ class ParticlePhysics(object):
                                                    , [x+self.R,y-self.R]
                                                    , [x+self.R,y+self.R]
                                                    , [x-self.R,y+self.R]]))
-        for p in self.system.particles:
+
+        c_i, c_j = self.d_env.quadrant(x,y)
+        # checks neighbors in current cell
+        ns = [self.system.particles[i] for i in self.d_env.cells[c_i][c_j]]
+
+        for p in ns:
             if IsInPoly(p.position, bounding_box) and (p is not particle): # does not count current particle as its own neighbor 
                 neighbors.append(p)                                        # confusing variable names
         return neighbors
@@ -96,7 +101,6 @@ class ParticlePhysics(object):
             normal = normalize(np.array([-ey, ex])) # pointing into polygon
             th_out = -(np.pi/2. - 0.2)
             particle.velocity = normalize(rotate_vector(normal, th_out))
-
 
     # TODO: order of collisions is arbitrary if more than one neighbor in
     # bounding box. Is there a more principled way to do this?

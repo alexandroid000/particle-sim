@@ -35,12 +35,6 @@ K = 0.5
 ATTACH = False
 ANIMATE = True
 
-# following are set via command line or defaults now
-
-#N = 30
-#T = 100
-#FRAC_BALLISTIC = 0.2
-
 """env defines the environment
 
 needs to be an instance of class
