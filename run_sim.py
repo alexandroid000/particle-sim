@@ -129,7 +129,7 @@ if __name__ == '__main__':
     # initialize simulation
     system = System()
     data = {"pos":[[]]*T, "env":[[]]*T}
-    d_env = discretizedEnvironment(env)
+    d_env = discretizedEnvironment(env, N=10)
     simulation = ParticleSim(system, data, env, d_env,
                              br = BR, k = K, sticky=ATTACH,
                              r = R)
