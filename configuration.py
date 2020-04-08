@@ -20,6 +20,10 @@ BR: float
     characteristic "collision" length scale with environment boundaries
 K: float
     magnitude of repulsive force between particles
+D: int
+    discretization resolution. Number of squares along the longest dimension of
+    the environment (so, D=10 will set size of discretization to 10% this
+    dimension).
 ATTACH: bool
     true if we want particles to stick together when they collide
 ANIMATE: bool
@@ -32,6 +36,7 @@ L = 1.0
 R = 0.05*L
 BR = 0.005
 K = 0.5
+D = 10
 ATTACH = False
 ANIMATE = True
 

@@ -125,11 +125,12 @@ if __name__ == '__main__':
         N = int(args[1])
         T = int(args[2])
 
+    print("Running sim with N=",N,", T=",T,", FRAC_BALLISTIC=",FRAC_BALLISTIC)
 
     # initialize simulation
     system = System()
     data = {"pos":[[]]*T, "env":[[]]*T}
-    d_env = discretizedEnvironment(env, N=10)
+    d_env = discretizedEnvironment(env, D=D)
     simulation = ParticleSim(system, data, env, d_env,
                              br = BR, k = K, sticky=ATTACH,
                              r = R)
@@ -148,6 +149,7 @@ if __name__ == '__main__':
 
         system.particles.append(Particle(position=start_pts[i],
                                         velocity=list(vel),
+                                        id=i,
                                         radius = R,
                                         species= species,
                                         mass = mass))

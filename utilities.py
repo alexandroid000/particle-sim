@@ -102,9 +102,9 @@ def softRepulse(particle1, particle2, K):
 
 
 class discretizedEnvironment():
-    def __init__(self, env, N):
+    def __init__(self, env, D):
         self.env = env
-        self.N = N # number of cells along longest axis
+        self.D = D # number of cells along longest axis
         xs = [x for (x,y) in env.complete_vertex_list]
         ys = [y for (x,y) in env.complete_vertex_list]
         self.XMIN = np.amin(xs)
@@ -113,10 +113,12 @@ class discretizedEnvironment():
         self.YMAX = np.amax(ys)
 
         L_actual = max(abs(self.XMAX-self.XMIN), abs(self.YMAX-self.YMIN))
-        self.R = L_actual / self.N
+        self.R = L_actual / self.D
         xnum = int(np.ceil(abs(self.XMAX-self.XMIN)/self.R))
         ynum = int(np.ceil(abs(self.YMAX-self.YMIN)/self.R))
         self.cells = {i:{j:[] for j in range(ynum)} for i in range(xnum)}
+        self.L = len(self.cells) # number of rows
+        self.M = len(self.cells[0]) # number of columns
 
     def insert_particle(self, id, x, y):
         (i,j) = self.quadrant(x,y)
@@ -130,7 +132,16 @@ class discretizedEnvironment():
             raise ValueError("Particle has escaped the polygon...")
         r_num_x = abs(x-self.XMIN) // self.R
         r_num_y = abs(y-self.YMIN) // self.R
-        return (r_num_x, r_num_y)
+        return (int(r_num_x), int(r_num_y))
+
+    def update(self, particle, old_i, old_j):
+        id = particle.id
+        [x,y] = particle.position
+        i,j = self.quadrant(x,y)
+        if (i != old_i) or (j != old_j):
+            self.remove_particle(id, old_i, old_j)
+            self.insert_particle(id, x, y)
+
 
 
 # Environment Utilities

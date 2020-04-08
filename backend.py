@@ -17,12 +17,14 @@ from configuration import * # pylint: disable=unused-import
 
 class Particle():
 
-    def __init__(self, position, velocity, radius = None, species = None, mass = None): # constructoe of  a class
+    def __init__(self, position, velocity, id = None,
+                 radius = None, species = None, mass = None):
         self.position = np.array(position)
         self.velocity = np.array(velocity)
         self.radius = radius
         self.species = species
         self.mass = mass
+        self.id = id
 
 class System(): #list of particles
 
@@ -52,11 +54,15 @@ class ParticlePhysics(object):
                                                    , [x+self.R,y+self.R]
                                                    , [x-self.R,y+self.R]]))
 
-        c_i, c_j = self.d_env.quadrant(x,y)
-        # checks neighbors in current cell
-        ns = [self.system.particles[i] for i in self.d_env.cells[c_i][c_j]]
+        c_x, c_y = self.d_env.quadrant(x,y)
+        eight_neighborhood = []
+        for i in range(max(0,c_x-1), min(c_x+2, self.d_env.L)):
+            for j in range(max(0,c_y-1), min(c_y+2, self.d_env.M)):
+                eight_neighborhood.extend(self.d_env.cells[i][j])
 
-        for p in ns:
+        for i in eight_neighborhood:
+        #for p in self.system.particles:
+            p = self.system.particles[i]
             if IsInPoly(p.position, bounding_box) and (p is not particle): # does not count current particle as its own neighbor 
                 neighbors.append(p)                                        # confusing variable names
         return neighbors
@@ -111,6 +117,7 @@ class ParticlePhysics(object):
             softRepulse(particle, n, self.K)
 
     def take_step(self, particle):
+        i,j = self.d_env.quadrant(particle.position[0], particle.position[1])
         dr = self.next_dr(particle)
         if IsInPoly(particle.position + dr, self.env):
             particle.position += dr
@@ -118,6 +125,7 @@ class ParticlePhysics(object):
             particle.position = self.project_to_border_region(particle.position)
             d, edge_dir = dist_dir_closest_edge(particle.position, self.env)
             self.obstacle_interaction(particle, edge_dir)
+        self.d_env.update(particle, i, j)
 
     def next_dr(self, particle): #Next direction 
 
