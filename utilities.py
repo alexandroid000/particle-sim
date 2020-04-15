@@ -100,7 +100,6 @@ def softRepulse(particle1, particle2, K):
     particle1.velocity += f1/m1
     particle2.velocity += f2/m2
 
-
 class discretizedEnvironment():
     def __init__(self, env, D):
         self.env = env
