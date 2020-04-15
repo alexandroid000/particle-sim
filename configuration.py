@@ -1,4 +1,4 @@
-from environments import *
+from environments.envs import *
 import numpy as np
 
 # System Configuration
