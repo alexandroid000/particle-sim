@@ -5,7 +5,7 @@ from random import random
 
 # using bounce-viz as a submodule for geometric utilities
 import sys
-sys.path.insert(0, "./bounce-viz/src/")
+sys.path.insert(0, "./src/bounce-viz/src/")
 from helper.shoot_ray_helper import IsInPoly, ClosestPtAlongRay # pylint: disable=unused-import
 from helper.geometry_helper import AngleBetween # pylint: disable=unused-import
 from utilities import *

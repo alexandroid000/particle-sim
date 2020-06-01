@@ -11,7 +11,7 @@ for i in {0..3}
 do
     echo "running" $i
     source psim/bin/activate
-    ./run_sim.py $i &
+    ./src/run_sim.py $i &
 done
 
 wait
