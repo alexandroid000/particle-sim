@@ -5,13 +5,12 @@ from random import random
 
 # using bounce-viz as a submodule for geometric utilities
 import sys
-sys.path.insert(0, "./src/bounce-viz/src/")
+sys.path.insert(0, "./bounce-viz/src/")
 from helper.shoot_ray_helper import IsInPoly, ClosestPtAlongRay # pylint: disable=unused-import
 from helper.geometry_helper import AngleBetween # pylint: disable=unused-import
 from utilities import *
 from configuration import * # pylint: disable=unused-import
 
-###IDEA: Mass--> different types of collision ( in run function), different scatter
 # Simulation Backend
 # ------------------
 
@@ -73,16 +72,14 @@ class ParticlePhysics(object):
     def project_to_border_region(self, pt):
         d, [ex,ey] = dist_dir_closest_edge(pt, self.env)
         normal_dir = normalize(np.array([-ey, ex])) # pointing into polygon
-        return pt + (self.br - d) * normal_dir
+        return pt + (self.br + d) * normal_dir
 
     # move obstacle #c in the direction of dir
     # currently only internal obstacles can move, boundary is fixed
     def move_obstacle(self, c, dir):
-        old_poly = [[v for (i,v) in c] for c in deepcopy(self.env.vertex_list_per_poly)]
+        old_poly = [np.array([v for (i,v) in c]) for c in deepcopy(self.env.vertex_list_per_poly)]
         new_poly = [(v + dir) for v in old_poly[c]]
-        new_obstacles = old_poly[:c]+[new_poly]+old_poly[(c+1):]
-        #print("moved obstacle",c,"along vector",dir)
-        #print(len(new_obstacles),"new obstacles:",new_obstacles)
+        new_obstacles = np.array(old_poly[:c]+[new_poly]+old_poly[(c+1):])
         new_env = Simple_Polygon(self.env.name, new_obstacles[0], new_obstacles[1:])
         self.env = new_env
 
@@ -90,19 +87,26 @@ class ParticlePhysics(object):
         [ex,ey] = normalize(edge_dir)
         d, c, j = closest_edge(particle.position, self.env)
 
+        # active brownian particle
         if particle.species[0] == 'A':
-            dr = self.next_dr(particle) #picks new direction
-            proj_dr_onto_edge = ((dr.dot(edge_dir))/np.linalg.norm(edge_dir))*normalize(edge_dir)
 
-            # do not allow escape!!
+            # get direction of next step
+            dr = self.next_dr(particle)
+
+            # project next step onto normal/tangent vectors to get magnitude of
+            # force in each direction
+            tangent_f = ((dr.dot(edge_dir))/np.linalg.norm(edge_dir))
+            proj_dr_onto_edge = tangent_f*normalize(edge_dir)
+
+            # particle moves along wall tangent, distance scaled by incoming angle
             if IsInPoly(particle.position + proj_dr_onto_edge, self.env):
                 particle.position += proj_dr_onto_edge
 
             # only called if a moveable obstacle (component c != 0)
             if c != 0:
                 push_dir = np.array([ey, -ex]) # pointing into obstacle
-                proj_dr_onto_normal = push_dir*(dr.dot(push_dir))/np.linalg.norm(push_dir)
-                self.move_obstacle(c, proj_dr_onto_normal)
+                normal_f = (dr.dot(push_dir))/np.linalg.norm(push_dir)
+                self.move_obstacle(c, 10*dr*normal_f)
         else: 
             normal = normalize(np.array([-ey, ex])) # pointing into polygon
             th_out = -(np.pi/2. - 0.2)
@@ -116,6 +120,7 @@ class ParticlePhysics(object):
             #twoCollide(particle, n) # uncomment for elastic collision
             softRepulse(particle, n, self.K)
 
+    # moves particle. Should ensure particle never leaves polygon
     def take_step(self, particle):
         i,j = self.d_env.quadrant(particle.position[0], particle.position[1])
         dr = self.next_dr(particle)

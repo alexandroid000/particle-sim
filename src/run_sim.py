@@ -72,11 +72,7 @@ def init():
         p = Polygon(poly, ec='k', lw=2, fc='none')
         patches.append(ax.add_patch(p))
 
-    cycle = get_limit_cycle_poly(8, 1., 1, 0.2)
-    c = Polygon(cycle, ec='r', lw=1, fc='none', ls='--')
-    cpatch = [ax.add_patch(c)]
-
-    return patches+cpatch+[scat]
+    return patches+[scat]
 
 def animate(i):
     """perform animation step"""

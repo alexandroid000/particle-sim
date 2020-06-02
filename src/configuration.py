@@ -46,8 +46,9 @@ needs to be an instance of class
 Simple_Polygon from bounce-viz/src/simple_polygon.py
 
 see environments.py and bounce-viz/src/maps.py for more examples"""
+print("establishing environment")
 #env = Simple_Polygon("smallpoly1",smallpoly1[0])
-env = octagon(L)
+env = square_hole()
 
 """bounds of animation window"""
 xs = [x for (x,y) in env.complete_vertex_list]

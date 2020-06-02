@@ -73,11 +73,8 @@ def twoCollide(particle1, particle2):
     particle2.velocity = v2prime
 
 def softRepulse(particle1, particle2, K):
-    v1, v2 = particle1.velocity, particle2.velocity
-    v1x, v1y = v1
-    v2x, v2y = v2
     m1, m2 = particle1.mass, particle2.mass
-    p1, p2 = np.array(particle1.position), np.array(particle2.position)
+    p1, p2 = particle1.position, particle2.position
     r1, r2 = particle1.radius, particle2.radius
     # vector from p1 to p2
     r12 = normalize(p2-p1)
