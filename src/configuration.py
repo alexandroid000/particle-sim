@@ -34,7 +34,7 @@ FRAC_BALLISTIC: float
 
 L = 1.0
 R = 0.05*L
-BR = 0.005
+BR = 0.1
 K = 0.5
 D = 10
 ATTACH = False
@@ -48,7 +48,7 @@ Simple_Polygon from bounce-viz/src/simple_polygon.py
 see environments.py and bounce-viz/src/maps.py for more examples"""
 print("establishing environment")
 #env = Simple_Polygon("smallpoly1",smallpoly1[0])
-env = square_hole()
+env = hallway_obs()
 
 """bounds of animation window"""
 xs = [x for (x,y) in env.complete_vertex_list]
@@ -60,6 +60,8 @@ YMAX = np.amax(ys)
 
 L_actual = max(abs(XMAX-XMIN), abs(YMAX-YMIN))
 
+# step size is 1% of maximum env dimension
+DELTA = L_actual/100.
 
 # Particle Configuration
 # ----------------------
@@ -68,14 +70,12 @@ L_actual = max(abs(XMAX-XMIN), abs(YMAX-YMIN))
 
 # type A particles:
     # active brownian particles
-A_properties = {'vel':1., 'wall_prob': 0.05, 'beta': 0.2}
+A_properties = {'vel':1., 'beta': 0.2}
 
 # type B particles:
     # bouncing robots 
-B_properties = {'vel':200., 'wall_prob': 0.05, 'beta': 0.0}
+B_properties = {'vel':100., 'beta': 0.0}
 
 properties = { 'A-free':A_properties
              ,'B-free':B_properties
-             ,'A-wall':A_properties
-             ,'B-wall':B_properties
              }

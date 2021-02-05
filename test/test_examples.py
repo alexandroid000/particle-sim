@@ -1,10 +1,15 @@
 #! /usr/bin/env python
 
 import unittest
+
+import sys
+sys.path.append("./src")
+sys.path.append("./src/bounce-viz/src/")
+
 from backend import *
 from utilities import *
-from maps import *
-from environments import *
+from environments.maps import *
+from environments.envs import *
 from random import randint, random
 import numpy as np
 
@@ -20,7 +25,7 @@ class TestExamples(unittest.TestCase):
         rect = np.array([(0., 0.), (12., 0.), (12., 8.), (0., 8.)])
 
         env = Simple_Polygon("r", rect)
-        d = discretizedEnvironment(env, N=12)
+        d = discretizedEnvironment(env, D=12)
         N_x = len(d.cells)
         N_y = len(d.cells[0])
         self.assertEqual(N_x, 12)
@@ -130,4 +135,19 @@ class TestExamples(unittest.TestCase):
         self.assertSequenceEqual(decode_policy(encode_policy(test1)), test1)
         self.assertSequenceEqual(decode_policy(encode_policy(test2)), test2)
         self.assertSequenceEqual(decode_policy(encode_policy(test3)), test3)
+
+    def test_project_to_border(self):
+        env = hallway_obs()
+        d_env = discretizedEnvironment(env, D=10)
+        system = System()
+        data = {"pos":[[]]*10, "env":[[]]*10}
+        simulation = ParticleSim(system, data, env, d_env, br=0.01)
+        pt1 = np.array([180.,0.]) # should project to (200.01,0)
+        pt1new = np.array([200.01,0.])
+        pt2 = np.array([0, -252]) # should project to (0, -249.99)
+        pt2new = np.array([0.,-249.99])
+        fixed_pt1 = simulation.project_to_border_region(pt1)
+        fixed_pt2 = simulation.project_to_border_region(pt2)
+        np.testing.assert_almost_equal(fixed_pt1, pt1new, decimal=7, verbose=True)
+        np.testing.assert_almost_equal(fixed_pt2, pt2new, decimal=7, verbose=True)
 

@@ -11,32 +11,42 @@ EPSILON = 0.000000001
 # --------------------
 
 # http://mathworld.wolfram.com/Point-LineDistance2-Dimensional.html
+# https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
 def closest_edge(pt, poly):
-    [x0,y0] = pt
+    [px,py] = pt
     vs = poly.vertex_list_per_poly
     n = poly.size
     components = len(vs)
     min_d = 100000000000
     closest_component = -1
-    closest_edge = -1
+    closest_e = -1
+
+    def dist2(v,w):
+        return (v[0]-w[0])**2 + (v[1]-w[1])**2
+
     # find closest edge over external boundary and holes
     for (i, component) in enumerate(vs):
         m = len(component)
         for j in range(m):
             [x1, y1], [x2,y2] = component[j][1], component[(j+1) % m][1]
-            d = abs((x2-x1)*(y1-y0) - (x1-x0)*(y2-y1)) / np.sqrt((x2-x1)**2 + (y2-y1)**2)
+            l2 = dist2([x1,y1],[x2,y2])
+            u = ((px-x1)*(x2-x1) + (py-y1)*(y2-y1))/l2
+            t = max(0, min(1,u))
+            pt_closest = [x1 + t*(x2-x1), y1 + t*(y2-y1)]
+            d = np.sqrt(dist2(pt, pt_closest))
+
             if d < min_d:
                 min_d = d
                 closest_component = i
-                closest_edge = j
-    return min_d, closest_component, closest_edge
+                closest_e = j
+    return min_d, closest_component, closest_e
 
 def dist_dir_closest_edge(pt, poly):
     d, c, j = closest_edge(pt, poly)
     vs = poly.vertex_list_per_poly
     csize = len(vs[c])
     edge_vect = vs[c][(j + 1) % csize][1] - vs[c][j][1]
-    return d, edge_vect
+    return d, c, j, edge_vect
 
 def normalize(vector):
     norm = np.linalg.norm(vector)
@@ -51,12 +61,11 @@ def rotate_vector(v, theta):
                      np.sin(theta)*vx + np.cos(theta)*vy])
 
 def midpoint(pt1, pt2):
-    return (pt1+pt2)/2
+    return (pt1+pt2)/2.
 
 
 # Collision Utilities
 # -------------------
-
 
 # elastic scattering
 def twoCollide(particle1, particle2):
@@ -125,6 +134,7 @@ class discretizedEnvironment():
 
     def quadrant(self, x,y):
         if x > self.XMAX or x < self.XMIN or y > self.YMAX or y < self.YMIN:
+            print("x,y=",x,y)
             raise ValueError("Particle has escaped the polygon...")
         r_num_x = abs(x-self.XMIN) // self.R
         r_num_y = abs(y-self.YMIN) // self.R
@@ -137,7 +147,6 @@ class discretizedEnvironment():
         if (i != old_i) or (j != old_j):
             self.remove_particle(id, old_i, old_j)
             self.insert_particle(id, x, y)
-
 
 
 # Environment Utilities

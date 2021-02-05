@@ -6,10 +6,9 @@ from random import random
 # using bounce-viz as a submodule for geometric utilities
 import sys
 sys.path.insert(0, "./bounce-viz/src/")
-from helper.shoot_ray_helper import IsInPoly, ClosestPtAlongRay # pylint: disable=unused-import
-from helper.geometry_helper import AngleBetween # pylint: disable=unused-import
+from helper.shoot_ray_helper import IsInPoly
 from utilities import *
-from configuration import * # pylint: disable=unused-import
+from configuration import *
 
 # Simulation Backend
 # ------------------
@@ -70,16 +69,23 @@ class ParticlePhysics(object):
     # nonconvex polygons
     # look into pyclipper library
     def project_to_border_region(self, pt):
-        d, [ex,ey] = dist_dir_closest_edge(pt, self.env)
+        d, c, j, [ex,ey] = dist_dir_closest_edge(pt, self.env)
         normal_dir = normalize(np.array([-ey, ex])) # pointing into polygon
-        return pt + (self.br + d) * normal_dir
+        new_pt = pt + (self.br + d) * normal_dir
+        if not IsInPoly(new_pt, self.env):
+            print("Something went wrong projecting")
+            print("projected", pt, "to", new_pt)
+            print("through edge",j,"in component",c)
+            print("in environment", self.env.vertex_list_per_poly)
+            raise ValueError("Particle has escaped the polygon...")
+        return new_pt
 
     # move obstacle #c in the direction of dir
     # currently only internal obstacles can move, boundary is fixed
     def move_obstacle(self, c, dir):
         old_poly = [np.array([v for (i,v) in c]) for c in deepcopy(self.env.vertex_list_per_poly)]
         new_poly = [(v + dir) for v in old_poly[c]]
-        new_obstacles = np.array(old_poly[:c]+[new_poly]+old_poly[(c+1):])
+        new_obstacles = np.array(old_poly[:c]+[new_poly]+old_poly[(c+1):], dtype=object)
         new_env = Simple_Polygon(self.env.name, new_obstacles[0], new_obstacles[1:])
         self.env = new_env
 
@@ -107,10 +113,14 @@ class ParticlePhysics(object):
                 push_dir = np.array([ey, -ex]) # pointing into obstacle
                 normal_f = (dr.dot(push_dir))/np.linalg.norm(push_dir)
                 self.move_obstacle(c, 10*dr*normal_f)
-        else: 
-            normal = normalize(np.array([-ey, ex])) # pointing into polygon
-            th_out = -(np.pi/2. - 0.2)
-            particle.velocity = normalize(rotate_vector(normal, th_out))
+        else:
+            #prev_theta = np.arctan2(particle.velocity[1], particle.velocity[0])
+            #th_out = -(np.pi/2. - 0.2)
+            particle.velocity = normalize(rotate_vector(particle.velocity, 2*np.pi/3))
+            if c != 0:
+                push_dir = normalize(np.array([ey, -ex])) # pointing into obstacle
+                k = 1.0
+                self.move_obstacle(c, k*push_dir)
 
     # TODO: order of collisions is arbitrary if more than one neighbor in
     # bounding box. Is there a more principled way to do this?
@@ -124,11 +134,10 @@ class ParticlePhysics(object):
     def take_step(self, particle):
         i,j = self.d_env.quadrant(particle.position[0], particle.position[1])
         dr = self.next_dr(particle)
-        if IsInPoly(particle.position + dr, self.env):
-            particle.position += dr
-        else: #prevents particles going outside of polygon 
+        particle.position += dr
+        if not IsInPoly(particle.position, self.env): #prevents particles going outside of polygon
             particle.position = self.project_to_border_region(particle.position)
-            d, edge_dir = dist_dir_closest_edge(particle.position, self.env)
+            d, c, _, edge_dir = dist_dir_closest_edge(particle.position, self.env)
             self.obstacle_interaction(particle, edge_dir)
         self.d_env.update(particle, i, j)
 
@@ -161,7 +170,7 @@ class ParticlePhysics(object):
 class ParticleSim(ParticlePhysics):
 
     def __init__(self, system, database, env, d_env, delta=0.02,
-                       br = 0.01, k = 1.0, sticky = True, r = 0.01):
+                       br = 0.1, k = 1.0, sticky = True, r = 0.01):
 
         ParticlePhysics.__init__(self, system, env, delta, br, k, sticky, r)
 
@@ -209,12 +218,7 @@ class ParticleSim(ParticlePhysics):
 
                 # detect particle-particle collisions
                 self.particle_collide(p)
-                # boundary mode
-                if p.species[2:] == "wall":
-                    self.take_step_boundary(p)
-                # free space mode
-                else:
-                    self.take_step(p)
+                self.take_step(p)
 
 
     def log_data(self, step):

@@ -14,14 +14,10 @@ from utilities import normalize, uniform_sample_along_circle, uniform_sample_fro
 # Animation display parameters
 # ----------------------------
 
-color_map = { 'A-wall': (0, 0, 1)
-            , 'A-free': (0, 0, 1)
-            , 'B-wall': (0, 1, 0)
+color_map = { 'A-free': (0, 0, 1)
             , 'B-free': (0, 1, 0)
             }
-size_map =  { 'A-wall': 10
-            , 'A-free': 10
-            , 'B-wall': 50
+size_map =  { 'A-free': 10
             , 'B-free': 50
             }
 
@@ -61,7 +57,7 @@ def write_data(database, simname):
                     th.write(str(x)+" "+str(y)+" ")
             th.write("\n")
 
-    print("wrote data to",simname+"_typeA.xyz")
+    print("wrote data to",simname+".xyz")
 
 def init():
     """initialize animation"""
@@ -128,12 +124,13 @@ if __name__ == '__main__':
     data = {"pos":[[]]*T, "env":[[]]*T}
     d_env = discretizedEnvironment(env, D=D)
     simulation = ParticleSim(system, data, env, d_env,
-                             br = BR, k = K, sticky=ATTACH,
-                             r = R)
+                             delta = DELTA, br = BR, k = K,
+                             sticky=ATTACH, r = R)
     simname = env.name+"_N"+str(N)+"_T"+str(T)+"_F"+str(round(FRAC_BALLISTIC,2))
 
     # create N particles at random locations in the polygon
     start_pts = uniform_sample_from_poly(env, N)
+    start_pts = [[-400.,0.] for i in range(N)]
     #start_pts = uniform_sample_along_circle(env, N, 2.0)
     for i in range(N):
         vel = normalize(np.array([random()-0.5, random()-0.5]))
